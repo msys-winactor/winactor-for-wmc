@@ -1,0 +1,59 @@
+name: バグ修正タスク
+description: 不具合の原因を特定し、修正を行うタスク
+labels: ["task", "bugfix"]
+body:
+  - type: input
+    id: summary
+    attributes:
+      label: 概要
+      placeholder: 修正対象のバグを簡潔に記載（例：トークン取得時にエラーが発生する）
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction-steps
+    attributes:
+      label: 再現手順
+      placeholder: |
+        - 1. ログイン画面を開く
+        - 2. ユーザー名とパスワードを入力
+        - 3. ログインボタンを押すとエラーが発生
+
+  - type: textarea
+    id: cause-analysis
+    attributes:
+      label: 原因の分析（分かっている場合）
+      placeholder: ロジックミスやバリデーション不足など
+
+  - type: textarea
+    id: fix-plan
+    attributes:
+      label: 修正方針（対応予定）
+      placeholder: 修正方法や対象ファイルの概要を記載
+
+  - type: textarea
+    id: subtasks
+    attributes:
+      label: 修正に必要な作業（チェックリスト）
+      placeholder: |
+        - [ ] 原因調査
+        - [ ] 修正実装
+        - [ ] テスト実行
+
+  - type: input
+    id: branch-name
+    attributes:
+      label: 使用予定のバグ修正ブランチ名
+      placeholder: 例）bugfix/{issue番号}-login-error
+
+  - type: input
+    id: target-branch
+    attributes:
+      label: マージ予定のブランチ名
+      placeholder: 例）develop
+
+  - type: input
+    id: deadline
+    attributes:
+      label: 目標期限（任意）
+      placeholder: 例）2025-07-01

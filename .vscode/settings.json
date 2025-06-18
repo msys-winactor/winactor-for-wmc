@@ -1,0 +1,23 @@
+{
+  // Pythonファイルにだけ適用されるエディタ設定
+  "[python]": {
+    // ファイル保存時に自動整形を行う（Blackが有効になる）
+    "editor.formatOnSave": true,
+    // Python用のフォーマッタとして Black を使用
+    "editor.defaultFormatter": "ms-python.black-formatter",
+    // 保存時にインポート文を整理（isort + LSP経由）
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "always"
+    }
+  },
+
+  // Pythonの静的解析（Linter）を有効にする
+  "python.linting.enabled": true,
+  // Flake8 を Linter として使用
+  "python.linting.flake8Enabled": true,
+
+  // pytest をテストフレームワークとして有効にする
+  "python.testing.pytestEnabled": true,
+  "python.testing.unittestEnabled": false,
+  "python.testing.nosetestsEnabled": false
+}

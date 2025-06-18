@@ -1,0 +1,50 @@
+[tool.poetry]
+name = "template_python"
+version = "1.0.4"
+description = "Python template project"
+authors = ["Your Name <you@example.com>"]
+readme = "README.md"
+
+[tool.poetry.scripts]
+copy-to-public = "tools.package_copy_to_public:main"
+release = "tools.release:main"
+
+[tool.poetry.dependencies]
+python = "3.12.4"
+requests = ">=2.32.3,<3.0.0"
+
+[tool.poetry.group.dev.dependencies]
+black = "^25.1.0"
+isort = "^6.0.1"
+flake8 = "^7.2.0"
+pytest = "^8.3.5"
+pytest-cov = "^6.1.1"
+pytest-mock = "^3.14.0"
+pre-commit = "^4.2.0"
+flake8-pyproject = "^1.2.3"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.isort]
+profile = "black"
+line_length = 88
+
+[tool.flake8]
+max-line-length = 88
+extend-ignore = ["E203", "E402", "W503"]
+per-file-ignores = [
+    "src/winactor_nodes/**: E999"
+]
+exclude = [
+    ".git",
+    "__pycache__",
+    ".venv",
+    "build",
+    "dist",
+]
+
+[tool.black]
+line-length = 88
+target-version = ["py312"]

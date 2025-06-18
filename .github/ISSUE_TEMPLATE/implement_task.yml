@@ -1,0 +1,45 @@
+name: 実装タスク
+description: 新規開発・機能追加など、何らかの実装を行うタスク
+labels: ["task", "implement"]
+body:
+  - type: input
+    id: summary
+    attributes:
+      label: 概要
+      placeholder: 何を実装するか簡潔に記載（例：ログイン画面のバリデーション追加）
+    validations:
+      required: true
+
+  - type: textarea
+    id: detail
+    attributes:
+      label: 詳細な内容
+      placeholder: 処理内容、対象ファイル、補足情報などを具体的に記載
+
+  - type: textarea
+    id: subtasks
+    attributes:
+      label: 実装に必要な作業（チェックリスト）
+      placeholder: |
+        - [ ] 処理ロジックの実装
+        - [ ] 単体テストの作成
+        - [ ] 動作確認
+        - [ ] ドキュメントの更新（必要に応じて）
+
+  - type: input
+    id: branch-name
+    attributes:
+      label: 使用予定の開発ブランチ名
+      placeholder: 例）feature/{issue番号}-get-user-info
+
+  - type: input
+    id: target-branch
+    attributes:
+      label: マージ予定のブランチ名
+      placeholder: 例）develop
+
+  - type: input
+    id: deadline
+    attributes:
+      label: 目標期限（任意）
+      placeholder: 例）2025-07-01

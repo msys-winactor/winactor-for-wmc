@@ -1,0 +1,29 @@
+name: 調査タスク
+description: 不具合の原因調査や技術検討など、ソースコードの修正を伴わない調査タスク
+labels: ["task", "investigation"]
+body:
+  - type: input
+    id: summary
+    attributes:
+      label: 概要
+      placeholder: 調査対象の概要を簡潔に記載（例：起動時にエラーが発生する原因調査）
+    validations:
+      required: true
+
+  - type: textarea
+    id: investigation-points
+    attributes:
+      label: 調査内容・観点
+      placeholder: 調査対象・仮説・観点などを箇条書きで記載
+
+  - type: textarea
+    id: findings
+    attributes:
+      label: 調査結果・考察（調査後に追記）
+      placeholder: 調査の結果分かったこと、原因、今後の対応方針などを後から追記してください
+
+  - type: input
+    id: deadline
+    attributes:
+      label: 目標期限（任意）
+      placeholder: 例）2025-07-01

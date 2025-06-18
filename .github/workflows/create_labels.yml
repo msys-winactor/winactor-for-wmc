@@ -1,0 +1,61 @@
+name: Reset Labels
+
+on:
+  workflow_dispatch: # 手動実行のみ
+
+jobs:
+  reset-labels:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Remove all existing labels (except allowed ones)
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const allowed = ['task', 'investigation', 'implement', 'bugfix'];
+
+            const existingLabels = await github.rest.issues.listLabelsForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              per_page: 100
+            });
+
+            for (const label of existingLabels.data) {
+              if (!allowed.includes(label.name)) {
+                console.log(`Deleting label: ${label.name}`);
+                await github.rest.issues.deleteLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name: label.name
+                });
+              } else {
+                console.log(`Keeping label: ${label.name}`);
+              }
+            }
+
+      - name: Create allowed labels
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const labels = [
+              { name: 'task', color: 'f9d0c4', description: '作業タスク全般' },
+              { name: 'investigation', color: 'd4c5f9', description: '調査タスク' },
+              { name: 'implement', color: 'c2f0c4', description: '実装タスク' },
+              { name: 'bugfix', color: 'f9c5c5', description: 'バグ修正' }
+            ];
+
+            for (const label of labels) {
+              try {
+                await github.rest.issues.createLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  ...label
+                });
+              } catch (e) {
+                if (e.status === 422) {
+                  console.log(`Label '${label.name}' already exists.`);
+                } else {
+                  throw e;
+                }
+              }
+            }
