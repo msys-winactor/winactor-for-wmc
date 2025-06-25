@@ -21,9 +21,3 @@ body:
     attributes:
       label: 調査結果・考察（調査後に追記）
       placeholder: 調査の結果分かったこと、原因、今後の対応方針などを後から追記してください
-
-  - type: input
-    id: deadline
-    attributes:
-      label: 目標期限（任意）
-      placeholder: 例）2025-07-01
