@@ -27,5 +27,4 @@ def export_events_csv(csv_url, token, params, save_path):
                 f"detail: {error_json.get('detail', '')}"
             )
     except Exception as e:
-        # requests自体のエラーなど
         raise ExportEventsCsvError(str(e))
