@@ -11,19 +11,12 @@ body:
       required: true
 
   - type: textarea
-    id: detail
-    attributes:
-      label: 詳細な内容
-      placeholder: 処理内容、対象ファイル、補足情報などを具体的に記載
-
-  - type: textarea
     id: subtasks
     attributes:
       label: 実装に必要な作業（チェックリスト）
       placeholder: |
         - [ ] 処理ロジックの実装
         - [ ] 単体テストの作成
-        - [ ] 動作確認
         - [ ] ドキュメントの更新（必要に応じて）
 
   - type: input
@@ -37,9 +30,3 @@ body:
     attributes:
       label: マージ予定のブランチ名
       placeholder: 例）develop
-
-  - type: input
-    id: deadline
-    attributes:
-      label: 目標期限（任意）
-      placeholder: 例）2025-07-01
