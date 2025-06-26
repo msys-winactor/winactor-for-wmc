@@ -5,7 +5,7 @@ import os
 sys.path.append("C:\\msys-winactor")
 sys.path.append("C:\\Users\\Public\\msys-winactor\\libs")
 
-from template_python import sample_module
+from winactor_for_wmc import sample_module
 
 def main(**kwargs):
     return sample_module.run(**kwargs)
