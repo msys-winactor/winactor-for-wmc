@@ -1,6 +1,6 @@
 import requests
 
-import get_departments
+from . import get_departments
 
 
 class RegisterScheduleError(Exception):
