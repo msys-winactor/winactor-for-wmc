@@ -28,4 +28,5 @@ jobs:
         run: poetry install
 
       - name: Run tests
-        run: poetry run pytest
+        run: set PYTHONPATH=src
+             poetry run pytest
