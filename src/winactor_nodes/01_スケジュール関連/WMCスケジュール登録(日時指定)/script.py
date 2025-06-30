@@ -3,11 +3,10 @@ import os
 import json
 import getpass
 
-# モジュール検索パスを追加
 sys.path.append("C:\\msys-winactor")
 sys.path.append("C:\\Users\\Public\\msys-winactor\\libs")
 
-from auth import post_schedules
+import post_schedules
 
 # 各種パラメータ
 BASE_URL = !BASE_URL!  # type: ignore
