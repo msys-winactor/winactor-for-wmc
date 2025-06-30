@@ -11,7 +11,7 @@ import export_csv
 # 各種パラメータ
 BASE_URL = !BASE_URL!  # type: ignore
 TOKEN = !TOKEN!  # type: ignore
-CSV_SAVE_PATH = !CSV_SAVE_PATH!  # type: ignore  # 例: r"C:\Users\30140\Desktop\my_events.csv"
+CSV_SAVE_PATH = !CSV_SAVE_PATH!  # type: ignore
 
 # BASE_URLの末尾に「/」がなければ足す
 if not BASE_URL.endswith("/"):
@@ -26,9 +26,9 @@ try:
     os.makedirs(save_dir, exist_ok=True)
 
     # CSVファイルをダウンロード＆保存
-    export_csv.export_events_csv(
+    export_csv.export_csv(
         CSV_EXPORT_URL, TOKEN, params, save_path=CSV_SAVE_PATH
     )
 
 except Exception as e:
-    raise winactor.WinActorError(1, f"エラー: {str(e)}")  # type: ignore
+    raise winactor.WinActorError(1, f"イベント情報エクスポートエラー\n{str(e)}")  # type: ignore
