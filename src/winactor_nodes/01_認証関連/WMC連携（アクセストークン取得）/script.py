@@ -13,7 +13,7 @@ def main(**kwargs):
 
 if __name__ == "__main__":
     # WinActorから入力値を取得
-    base_url = !WMC_URL!     # pyright: ignore
+    base_url = !WMC URL!     # pyright: ignore
     user_id = !ユーザーID!     # pyright: ignore
     password = !パスワード!    # pyright: ignore
 
