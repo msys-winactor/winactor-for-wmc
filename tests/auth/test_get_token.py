@@ -115,7 +115,7 @@ class TestGetToken:
             run(
                 base_url="https://example.com",
                 user_id="test_user",
-                password="wrong_pass"
+                password="wrong_pass",
             )
 
         # 検証
