@@ -1,5 +1,5 @@
-"""WinActor for WMC - WinActor Manager Cloud連携ライブラリ
+"""
+WinActor for WMC パッケージ
 
-このパッケージは、WinActor Manager Cloud（WMC）のAPIを利用するための
-共通ライブラリとWinActorノード用スクリプトを提供します。
+このパッケージはWinActorとWMCの連携に必要な機能を提供します。
 """
