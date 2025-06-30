@@ -12,6 +12,7 @@ release = "tools.release:main"
 [tool.poetry.dependencies]
 python = "3.12.4"
 requests = ">=2.32.3,<3.0.0"
+winactor_for_wmc = { path = "src/winactor_for_wmc", develop = true }
 
 [tool.poetry.group.dev.dependencies]
 black = "^25.1.0"
