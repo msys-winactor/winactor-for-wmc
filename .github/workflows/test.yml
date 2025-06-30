@@ -28,5 +28,7 @@ jobs:
         run: poetry install
 
       - name: Run tests
-        run: $env:PYTHONPATH = "src"
-             poetry run pytest
+        run: |
+              $env:PYTHONPATH = "src"
+              poetry run pytest
+
