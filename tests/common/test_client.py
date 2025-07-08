@@ -223,7 +223,11 @@ class TestWMCApiClient:
         http_error = requests.exceptions.HTTPError("HTTP Error")
         mock_response.raise_for_status.side_effect = http_error
         mock_response.status_code = 400
-        mock_response.json.return_value = {"message": "不正なリクエストです"}
+        mock_response.json.return_value = {
+            "error": "INVALID_REQUEST",
+            "detail": "不正なリクエストです",
+            "instance": "/winactors",
+        }
 
         mock_request = mocker.patch("winactor_for_wmc.common.client.requests.request")
         mock_request.return_value = mock_response
@@ -233,7 +237,11 @@ class TestWMCApiClient:
             self.client.get("/winactors")
 
         # 検証
-        assert "APIエラー (400): 不正なリクエストです" in str(exc_info.value)
+        error_msg = str(exc_info.value)
+        assert "APIエラー (400):" in error_msg
+        assert "error    : INVALID_REQUEST" in error_msg
+        assert "detail   : 不正なリクエストです" in error_msg
+        assert "instance : /winactors" in error_msg
 
     def test_handle_http_error_without_message(self, mocker):
         """HTTPエラー（メッセージなし）の処理をテスト"""
@@ -301,3 +309,164 @@ class TestWMCApiClient:
         # URLにカスタムバージョンが含まれることを確認
         args, kwargs = mock_request.call_args
         assert kwargs["url"] == "https://example.com/v2.0/winactors"
+
+    def test_get_csv_success(self, mocker, tmp_path):
+        """CSVダウンロードが正常に動作することをテスト"""
+        # モックレスポンスの設定
+        mock_response = mocker.Mock()
+        mock_response.raise_for_status.return_value = None
+        mock_response.content = b"id,name\n1,test"
+
+        mock_request = mocker.patch("winactor_for_wmc.common.client.requests.get")
+        mock_request.return_value = mock_response
+
+        # 一時ファイルパスを作成
+        csv_path = tmp_path / "test.csv"
+
+        # テスト実行
+        result = self.client.get_csv("/winactors/csv", save_path=str(csv_path))
+
+        # 検証
+        mock_request.assert_called_once_with(
+            "https://example.com/v1.2/winactors/csv",
+            headers={
+                "Authorization": self.access_token,
+                "Content-Type": "application/json",
+            },
+            params=None,
+            timeout=30,
+        )
+        assert result == str(csv_path)
+        assert csv_path.read_bytes() == b"id,name\n1,test"
+
+    def test_get_csv_with_params(self, mocker, tmp_path):
+        """CSVダウンロード（パラメータ付き）のテスト"""
+        # モックレスポンスの設定
+        mock_response = mocker.Mock()
+        mock_response.raise_for_status.return_value = None
+        mock_response.content = b"id,name,status\n1,test,active"
+
+        mock_request = mocker.patch("winactor_for_wmc.common.client.requests.get")
+        mock_request.return_value = mock_response
+
+        # 一時ファイルパスを作成
+        csv_path = tmp_path / "winactors.csv"
+
+        # テスト実行
+        params = {"encoding": "UTF-8", "sort": "name", "sort_direction": "ASC"}
+        result = self.client.get_csv(
+            "/winactors/csv", params=params, save_path=str(csv_path)
+        )
+
+        # 検証
+        mock_request.assert_called_once_with(
+            "https://example.com/v1.2/winactors/csv",
+            headers={
+                "Authorization": self.access_token,
+                "Content-Type": "application/json",
+            },
+            params=params,
+            timeout=30,
+        )
+        assert result == str(csv_path)
+
+    def test_get_csv_no_save_path(self, mocker):
+        """CSVダウンロードで保存先が指定されていない場合のテスト"""
+        # モックレスポンスの設定（実際のHTTPリクエストをモック）
+        mock_response = mocker.Mock()
+        mock_response.raise_for_status.return_value = None
+        mock_response.content = b"id,name\n1,test"
+
+        mock_request = mocker.patch("winactor_for_wmc.common.client.requests.get")
+        mock_request.return_value = mock_response
+
+        # テスト実行
+        with pytest.raises(RuntimeError) as exc_info:
+            self.client.get_csv("/winactors/csv")
+
+        assert "保存先のファイルパスを指定してください" in str(exc_info.value)
+
+    def test_download_file_success(self, mocker, tmp_path):
+        """ファイルダウンロードが正常に動作することをテスト"""
+        # モックレスポンスの設定
+        mock_response = mocker.Mock()
+        mock_response.raise_for_status.return_value = None
+        mock_response.content = b"binary file content"
+
+        mock_request = mocker.patch("winactor_for_wmc.common.client.requests.get")
+        mock_request.return_value = mock_response
+
+        # 一時ファイルパスを作成
+        file_path = tmp_path / "downloaded_file.bin"
+
+        # テスト実行
+        result = self.client.download_file(
+            "/files/123/content", save_path=str(file_path)
+        )
+
+        # 検証
+        mock_request.assert_called_once_with(
+            "https://example.com/v1.2/files/123/content",
+            headers={
+                "Authorization": self.access_token,
+                "Content-Type": "application/json",
+            },
+            params=None,
+            timeout=30,
+        )
+        assert result == str(file_path)
+        assert file_path.read_bytes() == b"binary file content"
+
+    def test_download_file_http_error(self, mocker):
+        """ファイルダウンロードでHTTPエラーが発生した場合のテスト"""
+        # モックレスポンスの設定
+        mock_response = mocker.Mock()
+        mock_response.raise_for_status.side_effect = requests.exceptions.HTTPError(
+            "Not Found"
+        )
+        mock_response.status_code = 404
+        mock_response.json.return_value = {
+            "error": "FILE_NOT_FOUND",
+            "detail": "ファイルが見つかりません",
+            "instance": "/files/999/content",
+        }
+
+        mock_request = mocker.patch("winactor_for_wmc.common.client.requests.get")
+        mock_request.return_value = mock_response
+
+        # テスト実行
+        with pytest.raises(RuntimeError) as exc_info:
+            self.client.download_file("/files/999/content", save_path="/tmp/test.bin")
+
+        # 検証
+        error_msg = str(exc_info.value)
+        assert "ファイルダウンロード APIエラー (404):" in error_msg
+        assert "error    : FILE_NOT_FOUND" in error_msg
+        assert "detail   : ファイルが見つかりません" in error_msg
+        assert "instance : /files/999/content" in error_msg
+
+    def test_csv_download_http_error(self, mocker):
+        """CSVダウンロードでHTTPエラーが発生した場合のテスト"""
+        # モックレスポンスの設定
+        mock_response = mocker.Mock()
+        mock_response.raise_for_status.side_effect = requests.exceptions.HTTPError(
+            "Forbidden"
+        )
+        mock_response.status_code = 403
+        mock_response.json.return_value = {
+            "error": "PERMISSION_DENIED",
+            "detail": "このリソースにアクセスする権限がありません",
+            "instance": "/winactors/csv",
+        }
+
+        mock_request = mocker.patch("winactor_for_wmc.common.client.requests.get")
+        mock_request.return_value = mock_response
+
+        # テスト実行
+        with pytest.raises(RuntimeError) as exc_info:
+            self.client.get_csv("/winactors/csv", save_path="/tmp/test.csv")
+
+        # 検証
+        error_msg = str(exc_info.value)
+        assert "CSVダウンロード APIエラー (403):" in error_msg
+        assert "error    : PERMISSION_DENIED" in error_msg
