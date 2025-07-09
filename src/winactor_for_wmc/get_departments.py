@@ -1,20 +1,26 @@
-from winactor_for_wmc.common.client import WMCApiClient
+import requests
 
 
-def get_departments(**kwargs):
-    base_url = kwargs.get("base_url")
-    token = kwargs.get("token")
-    idType = kwargs.get("idType")
-    id = kwargs.get("id")
-    department1 = kwargs.get("department1")
-    department2 = kwargs.get("department2")
-    department3 = kwargs.get("department3")
-    page = kwargs.get("page")
-    size = kwargs.get("size")
+class GetDepartmentsError(Exception):
+    """APIエラー時の独自例外"""
 
-    endpoint = "/departments"
+    pass
 
+
+def get_departments(
+    url,
+    token,
+    idType=None,
+    id=None,
+    department1=None,
+    department2=None,
+    department3=None,
+    page=None,
+    size=None,
+):
+    headers = {"Authorization": token}
     params = {}
+
     if idType:
         params["idType"] = idType
     if id:
@@ -30,11 +36,28 @@ def get_departments(**kwargs):
     if size is not None:
         params["size"] = size
 
-    client = WMCApiClient(base_url, token)
-    return client.get(endpoint, params=params)
+    try:
+        response = requests.get(url, headers=headers, params=params)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            error_json = response.json()
+            # ここでシンプルな文字列で例外を投げる
+            raise GetDepartmentsError(
+                f"module: get_departments\n"
+                f"status_code: {response.status_code}\n"
+                f"error: {error_json.get('error', '')}\n"
+                f"detail: {error_json.get('detail', '')}"
+            )
+
+    except Exception as e:
+        # すでにGetDepartmentsErrorなら再raise、それ以外はstr(e)で投げる
+        if isinstance(e, GetDepartmentsError):
+            raise
+        raise GetDepartmentsError(str(e))
 
 
-def get_departments_ids_by_names(
+def get_department_ids_by_names(
     result, department_name1=None, department_name2=None, department_name3=None
 ):
     """

@@ -1,0 +1,68 @@
+import get_departments
+import requests
+
+
+class UploadFileError(Exception):
+    """ファイルアップロード時の独自例外"""
+
+    pass
+
+
+def upload_file_with_department_names(
+    files_url,
+    departments_url,
+    token,
+    file_path,
+    file_data,
+    department_name1=None,
+    department_name2=None,
+    department_name3=None,
+):
+    """
+    部門名からIDを取得し、ファイルをアップロードし、fileIdを返す
+    """
+    # 1. 部門名→ID変換
+    try:
+        departments_result = get_departments.get_departments(
+            url=departments_url, token=token
+        )
+        department1_id, department2_id, department3_id = (
+            get_departments.get_department_ids_by_names(
+                departments_result,
+                department_name1=department_name1,
+                department_name2=department_name2,
+                department_name3=department_name3,
+            )
+        )
+        if department1_id is not None:
+            file_data["department1"] = department1_id
+        if department2_id is not None:
+            file_data["department2"] = department2_id
+        if department3_id is not None:
+            file_data["department3"] = department3_id
+    except get_departments.GetDepartmentsError as e:
+        raise UploadFileError(str(e))
+
+    # 2. ファイルアップロードAPI呼び出し
+    headers = {"Authorization": token}
+    try:
+        with open(file_path, "rb") as f:
+            files = {"file": f}
+            response = requests.post(
+                files_url, headers=headers, files=files, data=file_data
+            )
+            if response.status_code == 201:
+                return response.json().get("id")
+            else:
+                try:
+                    error_json = response.json()
+                except Exception:
+                    error_json = {}
+                raise UploadFileError(
+                    f"module: post_files\n"
+                    f"status_code: {response.status_code}\n"
+                    f"error: {error_json.get('error', '')}\n"
+                    f"detail: {error_json.get('detail', '')}"
+                )
+    except Exception as e:
+        raise UploadFileError(str(e))

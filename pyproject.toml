@@ -1,8 +1,5 @@
 [tool.poetry]
 name = "winactor_for_wmc"
-packages = [
-    { include = "winactor_for_wmc", from = "src" }
-]
 version = "1.0.4"
 description = "winactor_for_wmc project"
 authors = ["Your Name <you@example.com>"]
@@ -15,7 +12,6 @@ release = "tools.release:main"
 [tool.poetry.dependencies]
 python = "3.12.4"
 requests = ">=2.32.3,<3.0.0"
-cryptography = "^45.0.4"
 
 [tool.poetry.group.dev.dependencies]
 black = "^25.1.0"

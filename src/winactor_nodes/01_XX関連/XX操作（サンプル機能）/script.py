@@ -5,21 +5,20 @@ import os
 sys.path.append("C:\\msys-winactor")
 sys.path.append("C:\\Users\\Public\\msys-winactor\\libs")
 
-from winactor_for_wmc.auth import get_token
+from winactor_for_wmc import sample_module
 
 def main(**kwargs):
-    # run関数の呼び出し
-    return get_token.run(**kwargs)
+    return sample_module.run(**kwargs)
 
 
 if __name__ == "__main__":
     # WinActorから入力値を取得
-    base_url = !WMC URL!     # pyright: ignore
     user_id = !ユーザーID!     # pyright: ignore
     password = !パスワード!    # pyright: ignore
 
     # mainの呼び出し
-    result = main(base_url=base_url, user_id=user_id, password=password)
+    result = main(user_id=user_id, password=password)
 
-    # 結果をWinActorへ返す
-    winactor.set_variable($アクセストークン$, result.get("token", ""))   # pyright: ignore
+    # 結果をWinActorに返す
+    winactor.set_variable($ステータス$, result["status"])   # pyright: ignore
+    winactor.set_variable($トークン$, result["token"])   # pyright: ignore
