@@ -3,14 +3,12 @@ import sys
 
 import pytest
 
-# パス調整（プロジェクトルートからpytest実行なら不要ですが、保険で入れておくとよいです）
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../../")))
 
 from winactor_for_wmc.scenarios import post_scenarios
 
 
 def test_run_all_departments(mocker):
-    # モックパスはimportパスと必ず一致させる
     mock_get_departments = mocker.patch(
         "winactor_for_wmc.scenarios.post_scenarios.get_departments"
     )
@@ -32,7 +30,7 @@ def test_run_all_departments(mocker):
     scenario_data = {}
 
     result = post_scenarios.run(
-        scenarios_url="https://example.com",
+        base_url="https://example.com",  # ← ここを修正
         token="dummy_token",
         scenario_data=scenario_data,
         department_name1="A",
@@ -70,7 +68,7 @@ def test_run_partial_departments(mocker):
     scenario_data = {}
 
     result = post_scenarios.run(
-        scenarios_url="https://example.com",
+        base_url="https://example.com",  # ← ここを修正
         token="dummy_token",
         scenario_data=scenario_data,
         department_name1="A",
@@ -102,7 +100,7 @@ def test_run_only_department2(mocker):
     scenario_data = {}
 
     result = post_scenarios.run(
-        scenarios_url="https://example.com",
+        base_url="https://example.com",  # ← ここを修正
         token="dummy_token",
         scenario_data=scenario_data,
         department_name1=None,
@@ -134,7 +132,7 @@ def test_run_only_department3(mocker):
     scenario_data = {}
 
     result = post_scenarios.run(
-        scenarios_url="https://example.com",
+        base_url="https://example.com",  # ← ここを修正
         token="dummy_token",
         scenario_data=scenario_data,
         department_name1=None,
@@ -161,7 +159,7 @@ def test_run_no_departments(mocker):
     scenario_data = {}
 
     result = post_scenarios.run(
-        scenarios_url="https://example.com",
+        base_url="https://example.com",  # ← ここを修正
         token="dummy_token",
         scenario_data=scenario_data,
         department_name1=None,
@@ -190,7 +188,7 @@ def test_run_none_scenario_data(mocker):
     mock_client.post.return_value = {"result": "OK"}
 
     result = post_scenarios.run(
-        scenarios_url="https://example.com",
+        base_url="https://example.com",  # ← ここを修正
         token="dummy_token",
         scenario_data=None,
         department_name1=None,

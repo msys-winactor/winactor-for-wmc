@@ -3,7 +3,7 @@ from winactor_for_wmc.common.client import WMCApiClient
 
 
 def run(**kwargs):
-    scenarios_url = kwargs.get("scenarios_url")
+    base_url = kwargs.get("base_url")
     token = kwargs.get("token")
     scenario_data = kwargs.get("scenario_data") or {}
 
@@ -15,7 +15,7 @@ def run(**kwargs):
     if department_name1 or department_name2 or department_name3:
         # 部門一覧取得
         departments_result = get_departments.get_departments(
-            base_url=scenarios_url, token=token
+            base_url=base_url, token=token
         )
         department1_id, department2_id, department3_id = (
             get_departments.get_departments_ids_by_names(
@@ -33,7 +33,7 @@ def run(**kwargs):
             scenario_data["department3"] = department3_id
 
     # シナリオ登録API呼び出し
-    client = WMCApiClient(scenarios_url, token)
+    client = WMCApiClient(base_url, token)
     endpoint = "/scenarios"
     result = client.post(endpoint, data=scenario_data)
     return result

@@ -6,10 +6,10 @@ sys.path.append("C:\\Users\\Public\\msys-winactor\\libs")
 from winactor_for_wmc.scenarios import post_scenarios
 
 # 各種パラメータ
-TOKEN = !TOKEN!  # type: ignore
-SCENARIOS_URL = !SCENARIOS_URL!  # type: ignore
-FILE_ID = !FILE_ID!  # type: ignore
-NAME = !NAME!  # type: ignore
+BASE_URL = !WMC URL!  # type: ignore
+TOKEN = !アクセストークン!  # type: ignore
+FILE_ID = !ファイルID!  # type: ignore
+NAME = !名前!  # type: ignore
 PASSWORD = !パスワード!  # type: ignore
 DEPARTMENT1 = !所属(親)!  # type: ignore
 DEPARTMENT2 = !所属(子)!  # type: ignore
@@ -55,7 +55,7 @@ if __name__ == "__main__":
         scenario_data["simpleMode"] = False
 
     result = main(
-        scenarios_url=SCENARIOS_URL,
+        base_url=BASE_URL,
         token=TOKEN,
         scenario_data=scenario_data,
         department_name1=DEPARTMENT1,
@@ -63,4 +63,4 @@ if __name__ == "__main__":
         department_name3=DEPARTMENT3,
     )
     scenario_id = result.get('id', '')  # idが無い場合は空文字
-    winactor.set_variable($SCENARIO_ID$, scenario_id)  # type: ignore
+    winactor.set_variable($シナリオID$, scenario_id)  # type: ignore
