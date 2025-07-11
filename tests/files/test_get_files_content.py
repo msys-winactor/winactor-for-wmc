@@ -1,54 +1,60 @@
-from unittest.mock import MagicMock, patch
-
 import pytest
 
-# テスト対象モジュールを仮に sample_module.py とします
-from sample_module import run
+from winactor_for_wmc.files import get_files_content
 
 
-@pytest.fixture
-def kwargs():
-    return {
-        "base_url": "http://example.com",
-        "token": "dummy-token",
-        "file_id": "123",
-        "save_path": "/tmp/file.txt",
-    }
-
-
-@patch("sample_module.WMCApiClient")
-def test_run_calls_download_file_with_correct_args(mock_client_class, kwargs):
-    # モックインスタンスと返り値を設定
-    mock_client_instance = MagicMock()
-    mock_client_class.return_value = mock_client_instance
-    mock_client_instance.download_file.return_value = "downloaded!"
-
-    result = run(**kwargs)
-
-    # インスタンス生成が正しいか
-    mock_client_class.assert_called_once_with(kwargs["base_url"], kwargs["token"])
-
-    # download_file呼び出しが正しいか
-    mock_client_instance.download_file.assert_called_once_with(
-        f"/files/{kwargs['file_id']}/content",
-        params=None,
-        save_path=kwargs["save_path"],
+def test_run_normal(mocker):
+    # ここを修正！
+    mock_client_class = mocker.patch(
+        "winactor_for_wmc.files.get_files_content.WMCApiClient"
     )
+    mock_client = mock_client_class.return_value
+    mock_client.download_file.return_value = "success"
 
-    # 返り値が正しいか
-    assert result == "downloaded!"
+    kwargs = {
+        "base_url": "http://example.com",
+        "token": "TOKEN",
+        "file_id": "FILEID",
+        "save_path": "/tmp/test.txt",
+    }
+    result = get_files_content.run(**kwargs)
+
+    mock_client_class.assert_called_once_with("http://example.com", "TOKEN")
+    mock_client.download_file.assert_called_once_with(
+        "/files/FILEID/content", params=None, save_path="/tmp/test.txt"
+    )
+    assert result == "success"
 
 
-@patch("sample_module.WMCApiClient")
-def test_run_missing_kwargs(mock_client_class):
-    # すべての引数がNoneでもエラーにならないか（Noneで呼ばれるだけ）
-    mock_client_instance = MagicMock()
-    mock_client_class.return_value = mock_client_instance
-    mock_client_instance.download_file.return_value = "ok"
+def test_run_all_none(mocker):
+    mock_client_class = mocker.patch(
+        "winactor_for_wmc.files.get_files_content.WMCApiClient"
+    )
+    mock_client = mock_client_class.return_value
+    mock_client.download_file.return_value = "none_result"
 
-    result = run()
+    kwargs = {}
+    result = get_files_content.run(**kwargs)
+
     mock_client_class.assert_called_once_with(None, None)
-    mock_client_instance.download_file.assert_called_once_with(
+    mock_client.download_file.assert_called_once_with(
         "/files/None/content", params=None, save_path=None
     )
-    assert result == "ok"
+    assert result == "none_result"
+
+
+def test_run_download_file_exception(mocker):
+    mock_client_class = mocker.patch(
+        "winactor_for_wmc.files.get_files_content.WMCApiClient"
+    )
+    mock_client = mock_client_class.return_value
+    mock_client.download_file.side_effect = RuntimeError("download error")
+
+    kwargs = {
+        "base_url": "http://example.com",
+        "token": "TOKEN",
+        "file_id": "FILEID",
+        "save_path": "/tmp/test.txt",
+    }
+    with pytest.raises(RuntimeError, match="download error"):
+        get_files_content.run(**kwargs)
