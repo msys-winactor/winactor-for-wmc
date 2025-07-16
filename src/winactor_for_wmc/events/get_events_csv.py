@@ -11,6 +11,6 @@ def run(**kwargs):
 
     client = WMCApiClient(base_url, token)
 
-    response = client.get(endpoint, params=params)
+    response = client.get_csv(endpoint, params=params, save_path=save_path)
 
     return
