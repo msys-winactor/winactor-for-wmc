@@ -1,33 +1,47 @@
 import sys
 import os
-import getpass
 
 sys.path.append("C:\\msys-winactor")
 sys.path.append("C:\\Users\\Public\\msys-winactor\\libs")
 
-import export_csv
+from winactor_for_wmc.winactors import get_winactors_csv
 
-# 各種パラメータ（WinActorの変数展開を想定）
-BASE_URL = !BASE_URL!  # type: ignore
-TOKEN = !TOKEN!        # type: ignore
-CSV_SAVE_PATH = !CSV_SAVE_PATH!  # type: ignore
+def main(**kwargs):
+    return get_winactors_csv.run(**kwargs)
 
-# BASE_URLの末尾に「/」がなければ足す
-if not BASE_URL.endswith("/"):
-    BASE_URL += "/"
-CSV_EXPORT_URL = BASE_URL + "winactors/csv"
+if __name__ == "__main__":
+    BASE_URL = !WMC URL!  # type: ignore
+    TOKEN = !アクセストークン!  # type: ignore
+    CSV_SAVE_PATH = !CSVファイル名!  # type: ignore
+    ENCODING = !エンコーディング|MS932,UTF-8!  # type: ignore
+    UPDATEDATTYPE = !条件|次の範囲内,以後,以前!  # type: ignore
+    UPDATEDATDATE1 = !更新日1(yyyy/MM/dd)!  # type: ignore
+    UPDATEDATDATE2 = !更新日2(yyyy/MM/dd)!  # type: ignore
 
-params = {}
+    # 再代入
+    if UPDATEDATTYPE == "次の範囲内":
+        UPDATEDATTYPE = "range"
+    elif UPDATEDATTYPE == "以後":
+        UPDATEDATTYPE = "after"
+    elif UPDATEDATTYPE == "以前":
+        UPDATEDATTYPE = "before"
 
-try:
-    # 保存先ディレクトリがなければ作成
+    # 値があるものだけparamsに入れる
+    raw_params = {
+        "encoding": ENCODING,
+        "updatedAtType": UPDATEDATTYPE,
+        "updatedAtDate1": UPDATEDATDATE1,
+        "updatedAtDate2": UPDATEDATDATE2,
+    }
+    params = {k: v for k, v in raw_params.items() if v not in (None, "", [])}
+
+
     save_dir = os.path.dirname(CSV_SAVE_PATH)
     os.makedirs(save_dir, exist_ok=True)
 
-    # CSVファイルをダウンロード＆保存
-    export_csv.export_csv(
-        CSV_EXPORT_URL, TOKEN, params, save_path=CSV_SAVE_PATH
+    result = main(
+        base_url=BASE_URL,
+        token=TOKEN,
+        save_path=CSV_SAVE_PATH,
+        params=params,
     )
-
-except Exception as e:
-    raise winactor.WinActorError(1, f"WinActor情報エクスポートエラー\n{str(e)}")  # type: ignore
