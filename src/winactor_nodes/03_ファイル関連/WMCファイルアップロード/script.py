@@ -13,6 +13,7 @@ DEPARTMENT1 = !所属(親)!  # type: ignore
 DEPARTMENT2 = !所属(子)!  # type: ignore
 DEPARTMENT3 = !所属(孫)!  # type: ignore
 FILE_TAG = !ファイルタグ!  # type: ignore
+DESCRIPTION = !説明!  # type: ignore
 
 def main(**kwargs):
     return post_files.run(**kwargs)
@@ -28,6 +29,11 @@ if __name__ == "__main__":
         FILE_TAG = FILE_TAG.strip()
         if FILE_TAG:
             file_data["fileTag"] = FILE_TAG
+
+    if DESCRIPTION:
+        DESCRIPTION = DESCRIPTION.strip()
+        if DESCRIPTION:
+            file_data["description"] = DESCRIPTION
 
     file_id = main(
         base_url=BASE_URL,
