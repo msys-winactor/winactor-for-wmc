@@ -11,9 +11,10 @@ def main(**kwargs):
 if __name__ == "__main__":
     BASE_URL = !WMC URL!      # type: ignore
     TOKEN = !アクセストークン!  # type: ignore
-    USER_ID = !ユーザID!       # type: ignore
+    USER_NAME = !ユーザ名!     # type: ignore
 
-    result = main(base_url=BASE_URL, token=TOKEN, user_id=USER_ID)
+    # ユーザ名だけ渡せばOK
+    result = main(base_url=BASE_URL, token=TOKEN, user_name=USER_NAME)
 
     if isinstance(result, dict):
         winactor.set_variable($ユーザID$, result.get("id", ""))                              # type: ignore
@@ -46,7 +47,7 @@ if __name__ == "__main__":
         winactor.set_variable($表示件数$, result.get("pageSize", 0))                          # type: ignore
         winactor.set_variable($多要素認証利用有無$, result.get("mfa", False))                  # type: ignore
         winactor.set_variable($多要素認証方式$, result.get("mfaKind", ""))                    # type: ignore
-        winactor.set_variable($WinActorID$, result.get("winactorId", ""))                    # type: ignore
+        winactor.set_variable($WinActorID$, result.get("winactorId", ""))                     # type: ignore
     else:
         # 失敗時は空値やデフォルト値をセット
         winactor.set_variable($ユーザID$, "")                              # type: ignore
