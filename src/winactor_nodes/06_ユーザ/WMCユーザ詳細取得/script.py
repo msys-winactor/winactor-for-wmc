@@ -52,32 +52,32 @@ if __name__ == "__main__":
         # 失敗時は空値やデフォルト値をセット
         winactor.set_variable($ユーザID$, "")                              # type: ignore
         winactor.set_variable($ユーザ名$, "")                              # type: ignore
-        winactor.set_variable($親所属ID$, 0)                             # type: ignore
-        winactor.set_variable($子所属ID$, 0)                             # type: ignore
-        winactor.set_variable($孫所属ID$, 0)                             # type: ignore
+        winactor.set_variable($親所属ID$, "")                             # type: ignore
+        winactor.set_variable($子所属ID$, "")                             # type: ignore
+        winactor.set_variable($孫所属ID$, "")                             # type: ignore
         winactor.set_variable($所属名$, "")                              # type: ignore
         winactor.set_variable($ステータス$, "")                          # type: ignore
         winactor.set_variable($権限名$, "")                              # type: ignore
         winactor.set_variable($説明$, "")                                # type: ignore
-        winactor.set_variable($オートログアウト$, 0)                     # type: ignore
+        winactor.set_variable($オートログアウト$, "")                     # type: ignore
         winactor.set_variable($役職$, "")                                # type: ignore
-        winactor.set_variable($連続ログイン失敗回数$, 0)                 # type: ignore
-        winactor.set_variable($最終ログイン失敗日時$, 0)                 # type: ignore
-        winactor.set_variable($最終ログイン日時$, 0)                    # type: ignore
-        winactor.set_variable($作成日時$, 0)                            # type: ignore
+        winactor.set_variable($連続ログイン失敗回数$, "")                 # type: ignore
+        winactor.set_variable($最終ログイン失敗日時$, "")                 # type: ignore
+        winactor.set_variable($最終ログイン日時$, "")                    # type: ignore
+        winactor.set_variable($作成日時$, "")                            # type: ignore
         winactor.set_variable($作成者ユーザID$, "")                     # type: ignore
-        winactor.set_variable($更新日時$, 0)                            # type: ignore
+        winactor.set_variable($更新日時$, "")                            # type: ignore
         winactor.set_variable($メールアドレス$, "")                     # type: ignore
-        winactor.set_variable($承認通知有無$, False)                    # type: ignore
-        winactor.set_variable($タスク異常通知有無$, False)              # type: ignore
-        winactor.set_variable($WinActor異常通知有無$, False)            # type: ignore
-        winactor.set_variable($WinActor接続数上限通知有無$, False)      # type: ignore
-        winactor.set_variable($未所属WinActor接続通知有無$, False)      # type: ignore
-        winactor.set_variable($WinActorライセンス期限通知有無$, False)  # type: ignore
-        winactor.set_variable($通信量超過通知有無$, False)             # type: ignore
-        winactor.set_variable($ストレージ使用量超過通知有無$, False)    # type: ignore
-        winactor.set_variable($ライセンス数上限通知有無$, False)        # type: ignore
-        winactor.set_variable($表示件数$, 0)                            # type: ignore
-        winactor.set_variable($多要素認証利用有無$, False)              # type: ignore
+        winactor.set_variable($承認通知有無$, "")                    # type: ignore
+        winactor.set_variable($タスク異常通知有無$, "")              # type: ignore
+        winactor.set_variable($WinActor異常通知有無$, "")            # type: ignore
+        winactor.set_variable($WinActor接続数上限通知有無$, "")      # type: ignore
+        winactor.set_variable($未所属WinActor接続通知有無$, "")      # type: ignore
+        winactor.set_variable($WinActorライセンス期限通知有無$, "")  # type: ignore
+        winactor.set_variable($通信量超過通知有無$, "")             # type: ignore
+        winactor.set_variable($ストレージ使用量超過通知有無$, "")    # type: ignore
+        winactor.set_variable($ライセンス数上限通知有無$, "")        # type: ignore
+        winactor.set_variable($表示件数$, "")                            # type: ignore
+        winactor.set_variable($多要素認証利用有無$, "")              # type: ignore
         winactor.set_variable($多要素認証方式$, "")                    # type: ignore
         winactor.set_variable($WinActorID$, "")                        # type: ignore
