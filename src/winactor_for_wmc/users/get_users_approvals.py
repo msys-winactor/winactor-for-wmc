@@ -7,7 +7,7 @@ def run(**kwargs):
     token = kwargs.get("token")
     user_name = kwargs.get("user_name")
 
-    # 必ずuser_nameからuser_idを取得
+    # ユーザ名からユーザIDを取得
     user_id = user_utils.get_user_id_by_name(base_url, token, user_name)
 
     endpoint = f"/users/{user_id}/approvals"
@@ -16,20 +16,29 @@ def run(**kwargs):
     return response
 
 
-def get_first_schedule_info(result):
+def get_schedule_info(result, index=0):
     """
-    スケジュール一覧APIのレスポンスから最初のスケジュールIDと名前を取り出す
+    スケジュール一覧APIのレスポンスから指定インデックスの
+    スケジュールIDと名前を取り出す
+    - index: 0始まり。負のインデックス可（Python準拠）
+    - 不正値や範囲外、データなしの場合は ("", "") を返す
     """
     schedules = (
         result.get("userPendingApprovalSchedules", [])
         if isinstance(result, dict)
         else []
     )
-    if schedules:
-        first_schedule = schedules[0]
-        schedule_id = first_schedule.get("id", "")
-        schedule_name = first_schedule.get("name", "")
-    else:
-        schedule_id = ""
-        schedule_name = ""
-    return schedule_id, schedule_name
+
+    try:
+        idx = int(index)
+    except (TypeError, ValueError):
+        return "", ""
+
+    if not schedules:
+        return "", ""
+
+    if idx < -len(schedules) or idx >= len(schedules):
+        return "", ""
+
+    target = schedules[idx]
+    return target.get("id", ""), target.get("name", "")
