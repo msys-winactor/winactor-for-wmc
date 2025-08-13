@@ -1,17 +1,13 @@
 import sys
-import os
-import json
-import getpass
 
-# モジュール検索パスを追加
 sys.path.append("C:\\msys-winactor")
 sys.path.append("C:\\Users\\Public\\msys-winactor\\libs")
 
-from auth import post_schedules
+from winactor_for_wmc.schedules import post_schedules
 
 # 各種パラメータ
 BASE_URL = !BASE_URL!  # type: ignore
-TOKEN = !TOKEN!  # type: ignore
+TOKEN = !アクセストークン!  # type: ignore
 NAME = !スケジュール名!  # type: ignore
 DEPARTMENT1 = !所属(親)!  # type: ignore
 DEPARTMENT2 = !所属(子)!  # type: ignore
@@ -29,168 +25,94 @@ RETRYINTERVAL = !リトライ間隔(秒)!  # type: ignore
 DESCRIPTION = !メモ!  # type: ignore
 STATUS = !状態|有効,無効!  # type: ignore
 
+def main(**kwargs):
+    return post_schedules.run(**kwargs)
 
-# KINDは固定
-KIND = "specified"
+if __name__ == "__main__":
+    # 変換ロジック
+    winactor_list = [w.strip() for w in WINACTORS.split(",") if w.strip()] if WINACTORS else []
 
-# BASE_URLの末尾に「/」がなければ足す
-if not BASE_URL.endswith("/"):
-    BASE_URL += "/"
-SCHEDULES_URL = BASE_URL + "schedules"
-DEPARTMENTS_URL = BASE_URL + "departments"
+    # ARCHIVE 再代入
+    if ARCHIVE == "シナリオ実行後に作業ディレクトリのアーカイブを作成しない":
+        ARCHIVE = "false"
+    elif ARCHIVE == "シナリオ実行後に作業ディレクトリのアーカイブを作成する":
+        ARCHIVE = "true"
+    archive_bool = ARCHIVE.strip().lower() == "true"
 
-schedule_dict = {}
+    # LOG 再代入
+    if LOG == "シナリオ実行時のログを作業ディレクトリに出力しない":
+        LOG = "false"
+    elif LOG == "シナリオ実行時のログを作業ディレクトリに出力する":
+        LOG = "true"
+    log_bool = LOG.strip().lower() == "true"
 
-# パラメータの型を設定
+    # ONERROR 再代入
+    if ONERROR == "シナリオ実行時に異常が発生した場合、クリーンし、次のシナリオの実行の準備をする":
+        ONERROR = "clean"
+    elif ONERROR == "シナリオ実行時に異常が発生した場合、そこで停止させる":
+        ONERROR = "halt"
+    onerror_val = ONERROR.strip()
 
-if NAME:
-    NAME = NAME.strip()
+    # SENDMAIL 再代入
+    if SENDMAIL == "異常終了時のみ送信する":
+        SENDMAIL = "onError"
+    elif SENDMAIL == "送信しない":
+        SENDMAIL = "neither"
+    elif SENDMAIL == "終了時に送信する":
+        SENDMAIL = "both"
+    elif SENDMAIL == "正常終了時のみ送信する":
+        SENDMAIL = "onNormal"
+    sendmail_val = SENDMAIL.strip()
+
+    # STATUS 再代入
+    if STATUS == "有効":
+        STATUS = "enable"
+    elif STATUS == "無効":
+        STATUS = "disable"
+    status_val = STATUS.strip()
+
+    # schedule_dictの作成
+    schedule_dict = {}
     if NAME:
-        schedule_dict["name"] = NAME
-
-if DEPARTMENT1:
-    try:
-        schedule_dict["department1"] = int(DEPARTMENT1)
-    except Exception:
-        pass
-if DEPARTMENT2:
-    try:
-        schedule_dict["department2"] = int(DEPARTMENT2)
-    except Exception:
-        pass
-if DEPARTMENT3:
-    try:
-        schedule_dict["department3"] = int(DEPARTMENT3)
-    except Exception:
-        pass
-
-if SCENARIO_ID:
-    SCENARIO_ID = SCENARIO_ID.strip()
+        schedule_dict["name"] = NAME.strip()
     if SCENARIO_ID:
-        schedule_dict["scenarioId"] = SCENARIO_ID
-
-if WINACTORS:
-    WINACTORS = WINACTORS.strip()
-    if WINACTORS:
-        winactor_list = [w.strip() for w in WINACTORS.split(",") if w.strip()]
-        if winactor_list:
-            schedule_dict["winactors"] = winactor_list
-
-if TASKDATE:
-    TASKDATE = TASKDATE.strip()
+        schedule_dict["scenarioId"] = SCENARIO_ID.strip()
+    if winactor_list:
+        schedule_dict["winactors"] = winactor_list
     if TASKDATE:
-        schedule_dict["taskDate"] = TASKDATE
-
-if TASKTIME:
-    TASKTIME = TASKTIME.strip()
+        schedule_dict["taskDate"] = TASKDATE.strip()
     if TASKTIME:
-        schedule_dict["taskTime"] = TASKTIME
-
-#  再代入
-if ARCHIVE == "シナリオ実行後に作業ディレクトリのアーカイブを作成しない":
-    ARCHIVE = "false"
-elif ARCHIVE == "シナリオ実行後に作業ディレクトリのアーカイブを作成する":
-    ARCHIVE = "true"
-
-if ARCHIVE:
-    ARCHIVE = ARCHIVE.strip().lower()
-    if ARCHIVE == "true":
-        schedule_dict["archive"] = True
-    elif ARCHIVE == "false":
-        schedule_dict["archive"] = False
-
-#  再代入
-if LOG == "シナリオ実行時のログを作業ディレクトリに出力しない":
-    LOG = "false"
-elif LOG == "シナリオ実行時のログを作業ディレクトリに出力する":
-    LOG = "true"
-
-if LOG:
-    LOG = LOG.strip().lower()
-    if LOG == "true":
-        schedule_dict["log"] = True
-    elif LOG == "false":
-        schedule_dict["log"] = False
-
-# 再代入
-if ONERROR == "シナリオ実行時に異常が発生した場合、クリーンし、次のシナリオの実行の準備をする":
-    ONERROR = "clean"
-elif ONERROR == "シナリオ実行時に異常が発生した場合、そこで停止させる":
-    ONERROR = "halt"
-
-if ONERROR:
-    ONERROR = ONERROR.strip()
-    if ONERROR:
-        schedule_dict["onError"] = ONERROR
-
-#  再代入
-if SENDMAIL == "異常終了時のみ送信する":
-    SENDMAIL = "onError"
-elif SENDMAIL == "送信しない":
-    SENDMAIL = "neither"
-elif SENDMAIL == "終了時に送信する":
-    SENDMAIL = "both"
-elif SENDMAIL == "正常終了時のみ送信する":
-    SENDMAIL = "onNormal"
-
-if SENDMAIL:
-    SENDMAIL = SENDMAIL.strip()
-    if SENDMAIL:
-        schedule_dict["sendMail"] = SENDMAIL
-schedule_dict["kind"] = KIND
-
-if RETRYNUM:
-    RETRYNUM = RETRYNUM.strip()
-    try:
-        schedule_dict["retryNum"] = int(RETRYNUM)
-    except Exception:
-        pass
-
-if RETRYINTERVAL:
-    RETRYINTERVAL = RETRYINTERVAL.strip()
-    try:
-        schedule_dict["retryInterval"] = int(RETRYINTERVAL)
-    except Exception:
-        pass
-
-if DESCRIPTION:
-    DESCRIPTION = DESCRIPTION.strip()
+        schedule_dict["taskTime"] = TASKTIME.strip()
+    schedule_dict["archive"] = archive_bool
+    schedule_dict["log"] = log_bool
+    schedule_dict["onError"] = onerror_val
+    schedule_dict["sendMail"] = sendmail_val
+    schedule_dict["retryNum"] = int(RETRYNUM) if RETRYNUM and str(RETRYNUM).strip() else 0
+    schedule_dict["retryInterval"] = int(RETRYINTERVAL) if RETRYINTERVAL and str(RETRYINTERVAL).strip() else 0
     if DESCRIPTION:
-        schedule_dict["description"] = DESCRIPTION
+        schedule_dict["description"] = DESCRIPTION.strip()
+    schedule_dict["kind"] = "specified"
+    schedule_dict["status"] = status_val
 
-# 再代入
-if STATUS == "有効":
-    STATUS = "enable"
-elif STATUS == "無効":
-    STATUS = "disable"
-
-if STATUS:
-    STATUS = STATUS.strip()
-    if STATUS:
-        schedule_dict["status"] = STATUS
-
-
-# 部門名からIDを取得し、スケジュール登録
-try:
-
-    result = post_schedules.register_schedule_with_department_names(
-        SCHEDULES_URL,
-        DEPARTMENTS_URL,
-        TOKEN,
-        schedule_dict,
+    # mainの呼び出し
+    result = main(
+        schedules_url=BASE_URL,
+        departments_url=BASE_URL,
+        token=TOKEN,
+        schedule_data=schedule_dict,
         department_name1=DEPARTMENT1,
         department_name2=DEPARTMENT2,
-        department_name3=DEPARTMENT3
+        department_name3=DEPARTMENT3,
     )
-    # 返り値がリストなら最初の要素を使う
+
+    # 最初の要素を使う
     if isinstance(result, list) and len(result) > 0:
         first_item = result[0]
     else:
         first_item = result
     schedule_id = first_item.get("id", "")
     winactor_id = first_item.get("winactorId", "")
-    winactor.set_variable($スケジュールID$, schedule_id)    # type: ignore
-    winactor.set_variable($WinActorID$, winactor_id)    # type: ignore
 
-except Exception as e:
-    raise winactor.WinActorError(1, f"スケジュール登録(日時指定)エラー\n{str(e)}")  # type: ignore
+    # WinActor変数へセット
+    winactor.set_variable($スケジュールID$, schedule_id)    # type: ignore
+    winactor.set_variable($WinActorID$, winactor_id)         # type: ignore
