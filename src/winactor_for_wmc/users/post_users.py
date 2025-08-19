@@ -1,4 +1,3 @@
-# winactor_for_wmc/users/post_users.py
 from winactor_for_wmc.common import get_departments
 from winactor_for_wmc.common.client import WMCApiClient
 
@@ -13,7 +12,12 @@ def run(**kwargs):
     department_name2 = kwargs.get("department_name2")
     department_name3 = kwargs.get("department_name3")
 
-    if department_name1 or department_name2 or department_name3:
+    # 3つすべて空欄の場合の既定値
+    if not department_name1 and not department_name2 and not department_name3:
+        user_data["department1"] = 0
+        user_data["department2"] = None
+        user_data["department3"] = None
+    else:
         # 部門一覧取得
         departments_result = get_departments.get_departments(
             base_url=base_url, token=token

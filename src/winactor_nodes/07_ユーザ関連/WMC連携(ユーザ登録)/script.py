@@ -10,7 +10,7 @@ BASE_URL = !WMC URL!  # type: ignore
 TOKEN = !アクセストークン!  # type: ignore
 NAME = !ユーザ名!  # type: ignore
 PASSWORD = !パスワード!  # type: ignore
-ROLE = !ロール|administrator,user,watcher!  # type: ignore
+ROLE = !ロール!  # type: ignore
 DEPARTMENT1 = !所属(親)!  # type: ignore
 DEPARTMENT2 = !所属(子)!  # type: ignore
 DEPARTMENT3 = !所属(孫)!  # type: ignore
@@ -89,6 +89,7 @@ if __name__ == "__main__":
             user_data["name"] = _name
     if PASSWORD:
         user_data["password"] = str(PASSWORD).strip()
+
     if ROLE:
         _role = str(ROLE).strip()
         if _role:
