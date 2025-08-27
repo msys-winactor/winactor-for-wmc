@@ -1,3 +1,5 @@
+# tests/users/test_get_users_approvals.py
+
 from copy import deepcopy
 
 import pytest
@@ -76,7 +78,7 @@ def test_get_schedule_info_negative_index():
     assert schedule_name == "スケジュール2"
 
 
-def test_get_schedule_info_index_as_string():
+def test_get_schedule_info_index_as_string_numeric():
     response = {
         "userPendingApprovalSchedules": [
             {"id": "abc", "name": "スケジュール1"},
@@ -89,37 +91,37 @@ def test_get_schedule_info_index_as_string():
 
 
 @pytest.mark.parametrize("index", [5, -3])
-def test_get_schedule_info_out_of_range(index):
+def test_get_schedule_info_out_of_range_raises(index):
     response = {
         "userPendingApprovalSchedules": [
             {"id": "abc", "name": "スケジュール1"},
             {"id": "def", "name": "スケジュール2"},
         ]
     }
-    schedule_id, schedule_name = get_users_approvals.get_schedule_info(response, index)
-    assert schedule_id == ""
-    assert schedule_name == ""
+    with pytest.raises(ValueError) as e:
+        get_users_approvals.get_schedule_info(response, index)
+    assert "範囲外" in str(e.value)
 
 
-def test_get_schedule_info_empty_list():
+def test_get_schedule_info_empty_list_raises():
     response = {"userPendingApprovalSchedules": []}
-    schedule_id, schedule_name = get_users_approvals.get_schedule_info(response, 0)
-    assert schedule_id == ""
-    assert schedule_name == ""
+    with pytest.raises(ValueError) as e:
+        get_users_approvals.get_schedule_info(response, 0)
+    assert "スケジュール情報が存在しません" in str(e.value)
 
 
-def test_get_schedule_info_invalid_result_type():
+def test_get_schedule_info_invalid_result_type_raises():
     response = None
-    schedule_id, schedule_name = get_users_approvals.get_schedule_info(response, 0)
-    assert schedule_id == ""
-    assert schedule_name == ""
+    with pytest.raises(ValueError) as e:
+        get_users_approvals.get_schedule_info(response, 0)
+    assert "APIレスポンスが不正" in str(e.value)
 
 
-def test_get_schedule_info_missing_key():
-    response = {}  # キーがない場合は空扱い
-    schedule_id, schedule_name = get_users_approvals.get_schedule_info(response, 0)
-    assert schedule_id == ""
-    assert schedule_name == ""
+def test_get_schedule_info_missing_key_raises():
+    response = {}  # キーがない場合
+    with pytest.raises(ValueError) as e:
+        get_users_approvals.get_schedule_info(response, 0)
+    assert "スケジュール情報が存在しません" in str(e.value)
 
 
 def test_get_schedule_info_missing_fields():
@@ -138,20 +140,24 @@ def test_get_schedule_info_missing_fields():
     assert sname == ""
 
 
-# ここから追加分（カバレッジ強化）
-
-
-@pytest.mark.parametrize("index", ["a", None, "1.0", object()])
-def test_get_schedule_info_invalid_index_types(index):
+@pytest.mark.parametrize("bad_index", [None, ""])
+def test_get_schedule_info_raises_when_index_not_provided(bad_index):
     response = {
-        "userPendingApprovalSchedules": [
-            {"id": "abc", "name": "スケジュール1"},
-            {"id": "def", "name": "スケジュール2"},
-        ]
+        "userPendingApprovalSchedules": [{"id": "abc", "name": "スケジュール1"}]
     }
-    schedule_id, schedule_name = get_users_approvals.get_schedule_info(response, index)
-    assert schedule_id == ""
-    assert schedule_name == ""
+    with pytest.raises(ValueError) as e:
+        get_users_approvals.get_schedule_info(response, bad_index)
+    assert "未指定" in str(e.value)
+
+
+@pytest.mark.parametrize("bad_index", ["a", "1.0", object()])
+def test_get_schedule_info_raises_when_index_not_numeric(bad_index):
+    response = {
+        "userPendingApprovalSchedules": [{"id": "abc", "name": "スケジュール1"}]
+    }
+    with pytest.raises(ValueError) as e:
+        get_users_approvals.get_schedule_info(response, bad_index)
+    assert "数値ではありません" in str(e.value)
 
 
 def test_get_schedule_info_index_float_intable():
@@ -205,10 +211,10 @@ def test_get_schedule_info_index_string_negative():
 
 
 @pytest.mark.parametrize("bad_result", ["", 0, 1.5, [], (), set()])
-def test_get_schedule_info_non_dict_result(bad_result):
-    schedule_id, schedule_name = get_users_approvals.get_schedule_info(bad_result, 0)
-    assert schedule_id == ""
-    assert schedule_name == ""
+def test_get_schedule_info_non_dict_result_raises(bad_result):
+    with pytest.raises(ValueError) as e:
+        get_users_approvals.get_schedule_info(bad_result, 0)
+    assert "APIレスポンスが不正" in str(e.value)
 
 
 def test_get_schedule_info_does_not_mutate_input():
@@ -234,8 +240,9 @@ def test_get_schedule_info_large_index_boundary():
     sid, sname = get_users_approvals.get_schedule_info(response, 4)  # 境界内
     assert sid == "4" and sname == "スケジュール4"
 
-    sid, sname = get_users_approvals.get_schedule_info(response, 5)  # 境界外
-    assert sid == "" and sname == ""
+    with pytest.raises(ValueError) as e:
+        get_users_approvals.get_schedule_info(response, 5)  # 境界外
+    assert "範囲外" in str(e.value)
 
 
 def test_get_schedule_info_large_negative_boundary():
@@ -244,11 +251,14 @@ def test_get_schedule_info_large_negative_boundary():
             {"id": str(i), "name": f"スケジュール{i}"} for i in range(5)
         ]
     }
-    sid, sname = get_users_approvals.get_schedule_info(response, -5)  # 先頭
+    # -5 は先頭を指す（有効）
+    sid, sname = get_users_approvals.get_schedule_info(response, -5)
     assert sid == "0" and sname == "スケジュール0"
 
-    sid, sname = get_users_approvals.get_schedule_info(response, -6)  # 範囲外
-    assert sid == "" and sname == ""
+    # -6 は範囲外
+    with pytest.raises(ValueError) as e:
+        get_users_approvals.get_schedule_info(response, -6)
+    assert "範囲外" in str(e.value)
 
 
 def test_get_schedule_info_partial_fields_and_extra_fields():

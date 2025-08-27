@@ -16,29 +16,36 @@ def run(**kwargs):
     return response
 
 
+def _ensure_index_provided(index, name):
+    if index is None:
+        raise ValueError(f"{name} が未指定です。")
+    if isinstance(index, str) and index.strip() == "":
+        raise ValueError(f"{name} が未指定です。")
+
+
 def get_schedule_info(result, index=0):
     """
     スケジュール一覧APIのレスポンスから指定インデックスの
     スケジュールIDと名前を取り出す
     - index: 0始まり。負のインデックス可（Python準拠）
-    - 不正値や範囲外、データなしの場合は ("", "") を返す
+    - 不正値や範囲外、データなしの場合は例外を送出
     """
-    schedules = (
-        result.get("userPendingApprovalSchedules", [])
-        if isinstance(result, dict)
-        else []
-    )
+    _ensure_index_provided(index, "スケジュールのインデックス")
+
+    if not isinstance(result, dict):
+        raise ValueError("APIレスポンスが不正です（dict ではありません）。")
+
+    schedules = result.get("userPendingApprovalSchedules")
+    if not isinstance(schedules, list) or len(schedules) == 0:
+        raise ValueError("スケジュール情報が存在しません。")
 
     try:
         idx = int(index)
     except (TypeError, ValueError):
-        return "", ""
-
-    if not schedules:
-        return "", ""
+        raise ValueError("スケジュールのインデックスが数値ではありません。")
 
     if idx < -len(schedules) or idx >= len(schedules):
-        return "", ""
+        raise ValueError("スケジュールのインデックスが範囲外です。")
 
-    target = schedules[idx]
-    return target.get("id", ""), target.get("name", "")
+    target = schedules[idx] or {}
+    return target.get("id", "") or "", target.get("name", "") or ""
