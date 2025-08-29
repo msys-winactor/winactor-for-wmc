@@ -7,7 +7,7 @@ def run(**kwargs):
     token = kwargs.get("token")
     user_name = kwargs.get("user_name")
 
-    # 必ずuser_nameからuser_idを取得
+    # ユーザ名からユーザIDを取得
     user_id = user_utils.get_user_id_by_name(base_url, token, user_name)
 
     endpoint = f"/users/{user_id}/approvals"
@@ -16,20 +16,36 @@ def run(**kwargs):
     return response
 
 
-def get_first_schedule_info(result):
+def _ensure_index_provided(index, name):
+    if index is None:
+        raise ValueError(f"{name} が未指定です。")
+    if isinstance(index, str) and index.strip() == "":
+        raise ValueError(f"{name} が未指定です。")
+
+
+def get_schedule_info(result, index=0):
     """
-    スケジュール一覧APIのレスポンスから最初のスケジュールIDと名前を取り出す
+    スケジュール一覧APIのレスポンスから指定インデックスの
+    スケジュールIDと名前を取り出す
+    - index: 0始まり。負のインデックス可（Python準拠）
+    - 不正値や範囲外、データなしの場合は例外を送出
     """
-    schedules = (
-        result.get("userPendingApprovalSchedules", [])
-        if isinstance(result, dict)
-        else []
-    )
-    if schedules:
-        first_schedule = schedules[0]
-        schedule_id = first_schedule.get("id", "")
-        schedule_name = first_schedule.get("name", "")
-    else:
-        schedule_id = ""
-        schedule_name = ""
-    return schedule_id, schedule_name
+    _ensure_index_provided(index, "スケジュールのインデックス")
+
+    if not isinstance(result, dict):
+        raise ValueError("APIレスポンスが不正です（dict ではありません）。")
+
+    schedules = result.get("userPendingApprovalSchedules")
+    if not isinstance(schedules, list) or len(schedules) == 0:
+        raise ValueError("スケジュール情報が存在しません。")
+
+    try:
+        idx = int(index)
+    except (TypeError, ValueError):
+        raise ValueError("スケジュールのインデックスが数値ではありません。")
+
+    if idx < -len(schedules) or idx >= len(schedules):
+        raise ValueError("スケジュールのインデックスが範囲外です。")
+
+    target = schedules[idx] or {}
+    return target.get("id", "") or "", target.get("name", "") or ""
