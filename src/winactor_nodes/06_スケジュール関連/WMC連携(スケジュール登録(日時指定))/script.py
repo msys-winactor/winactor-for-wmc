@@ -6,7 +6,7 @@ sys.path.append("C:\\Users\\Public\\msys-winactor\\libs")
 from winactor_for_wmc.schedules import post_schedules
 
 # 各種パラメータ
-BASE_URL = !BASE_URL!  # type: ignore
+BASE_URL = !WMC URL!  # type: ignore
 TOKEN = !アクセストークン!  # type: ignore
 NAME = !スケジュール名!  # type: ignore
 DEPARTMENT1 = !所属(親)!  # type: ignore

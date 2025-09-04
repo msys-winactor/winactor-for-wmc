@@ -1,5 +1,4 @@
 import sys
-import os
 
 sys.path.append("C:\\msys-winactor")
 sys.path.append("C:\\Users\\Public\\msys-winactor\\libs")
@@ -7,8 +6,8 @@ sys.path.append("C:\\Users\\Public\\msys-winactor\\libs")
 from winactor_for_wmc.schedules import post_schedules
 
 # 各種パラメータ
-BASE_URL = !BASE_URL!  # type: ignore
-TOKEN = !TOKEN!  # type: ignore
+BASE_URL = !WMC URL!  # type: ignore
+TOKEN = !アクセストークン!  # type: ignore
 NAME = !スケジュール名!  # type: ignore
 DEPARTMENT1 = !所属(親)!  # type: ignore
 DEPARTMENT2 = !所属(子)!  # type: ignore
@@ -100,7 +99,6 @@ if __name__ == "__main__":
         department_name3=DEPARTMENT3,
     )
 
-    # 返り値がリストなら最初の要素を使う
     if isinstance(result, list) and len(result) > 0:
         first_item = result[0]
     else:
@@ -108,6 +106,6 @@ if __name__ == "__main__":
     schedule_id = first_item.get("id", "")
     winactor_id = first_item.get("winactorId", "")
 
-    # WinActor変数へセット（WinActor環境でのみ有効）
+    # WinActor変数へセット
     winactor.set_variable($スケジュールID$, schedule_id)    # type: ignore
     winactor.set_variable($WinActorID$, winactor_id)         # type: ignore
