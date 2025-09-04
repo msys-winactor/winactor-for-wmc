@@ -63,6 +63,7 @@ class WMCApiClient:
                 url=url,
                 headers=headers,
                 json=data if not files else None,
+                data=data if files else None,
                 params=params,
                 files=files,
                 timeout=30,
