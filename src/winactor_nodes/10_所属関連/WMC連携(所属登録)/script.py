@@ -12,7 +12,7 @@ TOKEN = !アクセストークン!  # type: ignore
 NAME = !所属名!  # type: ignore
 PARENT_DEPARTMENT = !親所属(名称)!  # type: ignore
 CHILD_DEPARTMENT = !子所属(名称)!  # type: ignore
-REMARKS = !備考!  # type: ignore
+REMARKS = !メモ!  # type: ignore
 
 
 def main(**kwargs):

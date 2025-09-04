@@ -1,9 +1,39 @@
 import sys
+import datetime
 
 sys.path.append("C:\\msys-winactor")
 sys.path.append("C:\\Users\\Public\\msys-winactor\\libs")
 
 from winactor_for_wmc.licenses import get_licenses_usagestatus
+
+
+def unix_to_datetime(unix_time):
+    """
+    UNIXタイムをyyyy/mm/dd hh:mm:ss形式に変換
+ 
+    Args:
+        unix_time (int or float): UNIXタイムスタンプ（秒またはミリ秒）
+ 
+    Returns:
+        str: yyyy/mm/dd hh:mm:ss形式の文字列
+    """
+    if unix_time is None or unix_time == "":
+        return ""
+    
+    try:
+        # 文字列の場合は数値に変換
+        if isinstance(unix_time, str):
+            unix_time = float(unix_time)
+        
+        # ミリ秒単位かどうかを判定（13桁以上の場合はミリ秒とみなす）
+        if unix_time > 9999999999:  # 10桁を超える場合（2001年以降の日付でミリ秒単位）
+            unix_time = unix_time / 1000
+        
+        dt = datetime.datetime.fromtimestamp(unix_time)
+        return dt.strftime('%Y/%m/%d %H:%M:%S')
+    
+    except (ValueError, TypeError, OSError) as e:
+        return ""
 
 
 def main(**kwargs):
@@ -88,7 +118,7 @@ if __name__ == "__main__":
     winactor.set_variable($ライセンスID$, license_info["id"])                  # type: ignore
     winactor.set_variable($ユーザ名$, license_info["userName"])                 # type: ignore
     winactor.set_variable($PC名$, license_info["pcName"])                      # type: ignore
-    winactor.set_variable($ライセンス無効化までの期限$, license_info["expiration"])   # type: ignore
+    winactor.set_variable($ライセンス無効化までの期限$, unix_to_datetime(license_info["expiration"]))   # type: ignore
     winactor.set_variable($ロケール$, license_info["locale"])                  # type: ignore
     winactor.set_variable($Feature名称$, license_info["featureName"])            # type: ignore
     winactor.set_variable($WinActor名$, license_info["winactorName"])          # type: ignore

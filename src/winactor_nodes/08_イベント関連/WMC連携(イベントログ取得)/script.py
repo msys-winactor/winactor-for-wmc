@@ -1,4 +1,5 @@
 import sys
+import datetime
 
 # ライブラリ検索パス（環境に合わせて変更）
 sys.path.append("C:\\msys-winactor")
@@ -6,7 +7,34 @@ sys.path.append("C:\\Users\\Public\\msys-winactor\\libs")
 
 from winactor_for_wmc.events import get_events
 
-
+def unix_to_datetime(unix_time):
+    """
+    UNIXタイムをyyyy/mm/dd hh:mm:ss形式に変換
+ 
+    Args:
+        unix_time (int or float): UNIXタイムスタンプ（秒またはミリ秒）
+ 
+    Returns:
+        str: yyyy/mm/dd hh:mm:ss形式の文字列
+    """
+    if unix_time is None or unix_time == "":
+        return ""
+    
+    try:
+        # 文字列の場合は数値に変換
+        if isinstance(unix_time, str):
+            unix_time = float(unix_time)
+        
+        # ミリ秒単位かどうかを判定（13桁以上の場合はミリ秒とみなす）
+        if unix_time > 9999999999:  # 10桁を超える場合（2001年以降の日付でミリ秒単位）
+            unix_time = unix_time / 1000
+        
+        dt = datetime.datetime.fromtimestamp(unix_time)
+        return dt.strftime('%Y/%m/%d %H:%M:%S')
+    
+    except (ValueError, TypeError, OSError) as e:
+        return ""
+    
 def main(**kwargs):
     return get_events.run(**kwargs)
 
@@ -133,6 +161,6 @@ if __name__ == "__main__":
         winactor.set_variable($実施主体$, event["subject"])                   # type: ignore
         winactor.set_variable($実施主体所属$, event["subjectDepartment"])     # type: ignore
         winactor.set_variable($実施主体ロール$, event["subjectRole"])         # type: ignore
-        winactor.set_variable($作成時刻UNIXタイム$, event["createdTime"])         # type: ignore
+        winactor.set_variable($作成時刻$, unix_to_datetime(event["createdTime"]))         # type: ignore
         winactor.set_variable($所属名$, event["departmentName"])             # type: ignore
         winactor.set_variable($実施主体所属名$, event["subjectDepartmentName"]) # type: ignore
