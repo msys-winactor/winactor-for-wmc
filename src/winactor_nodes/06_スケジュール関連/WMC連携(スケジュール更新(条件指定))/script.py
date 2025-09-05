@@ -15,15 +15,9 @@ DEPARTMENT2 = !所属(子)!  # type: ignore
 DEPARTMENT3 = !所属(孫)!  # type: ignore
 SCENARIO_ID = !シナリオID!  # type: ignore
 WINACTOR = !実行WinActor(ID)!  # type: ignore
-KIND = !種別|即時実行,日時指定,毎日,毎週,毎月,月末,条件指定!  # type: ignore
-TASKDATE = !日付指定日(yyyy/MM/dd)!  # type: ignore
-DAYOFWEEK = !曜日|なし,月曜日,火曜日,水曜日,木曜日,金曜日,土曜日,日曜日!  # type: ignore
-DAYOFMONTH = !毎月何日(1～31)!  # type: ignore
-DAYOFENDMONTH = !月末何日前(0～30)!  # type: ignore
-TASKTIME = !実行時間(hh:mm:ss)!  # type: ignore
-CRON = !CRON!  # type: ignore
 CRONSTARTYEARMONTH = !開始年月(yyyy/MM)!  # type: ignore
 CRONENDYEARMONTH = !終了年月(yyyy/MM)!  # type: ignore
+CRON = !CRON!  # type: ignore
 ARCHIVE = !アーカイブ|シナリオ実行後に作業ディレクトリのアーカイブを作成しない,シナリオ実行後に作業ディレクトリのアーカイブを作成する!  # type: ignore
 LOG = !ログ|シナリオ実行時のログを作業ディレクトリに出力しない,シナリオ実行時のログを作業ディレクトリに出力する!  # type: ignore
 ONERROR = !異常発生時|シナリオ実行時に異常が発生した場合、クリーンし、次のシナリオの実行の準備をする,シナリオ実行時に異常が発生した場合、そこで停止させる!  # type: ignore
@@ -42,31 +36,9 @@ if __name__ == "__main__":
     # 単一IDに変換
     winactor_id = winactor_list[0] if winactor_list else None
 
-    # KIND 再代入
-    kind_map = {
-        "即時実行": "immediately",
-        "日時指定": "specified",
-        "毎日": "daily",
-        "毎週": "weekly",
-        "毎月": "monthly",
-        "月末": "endmonth",
-        "条件指定": "cron"
-    }
-    KIND = kind_map.get(KIND.strip(), "") if KIND else ""
 
-    # DAYOFWEEK 再代入
-    dayofweek_map = {
-        "なし": "",
-        "月曜日": "monday",
-        "火曜日": "tuesday",
-        "水曜日": "wednesday",
-        "木曜日": "thursday",
-        "金曜日": "friday",
-        "土曜日": "saturday",
-        "土曜日": "saturday",
-        "日曜日": "sunday"
-    }
-    DAYOFWEEK = dayofweek_map.get(DAYOFWEEK.strip(), "") if DAYOFWEEK else ""
+
+
     
     # ARCHIVE 再代入
     if ARCHIVE == "シナリオ実行後に作業ディレクトリのアーカイブを作成しない":
@@ -115,24 +87,8 @@ if __name__ == "__main__":
         schedule_dict["scenarioId"] = SCENARIO_ID.strip()
     if winactor_id:
         schedule_dict["winactor"] = winactor_id  # ← 単一IDで渡す
-    if KIND:
-        schedule_dict["kind"] = KIND.strip()
-    if TASKDATE:
-        schedule_dict["taskDate"] = TASKDATE.strip()
-    if DAYOFWEEK:
-        schedule_dict["dayOfWeek"] = DAYOFWEEK.strip()
-    if DAYOFMONTH:
-        try:
-            schedule_dict["dayOfMonth"] = int(DAYOFMONTH.strip())
-        except Exception:
-            pass
-    if DAYOFENDMONTH:
-        try:
-            schedule_dict["dayOfEndMonth"] = int(DAYOFENDMONTH.strip())
-        except Exception:
-            pass
-    if TASKTIME:
-        schedule_dict["taskTime"] = TASKTIME.strip()
+
+
     if CRON:
         schedule_dict["cron"] = CRON.strip()
     schedule_dict["archive"] = archive_bool
@@ -148,6 +104,7 @@ if __name__ == "__main__":
     if DESCRIPTION:
         schedule_dict["description"] = DESCRIPTION.strip()
     schedule_dict["status"] = status_val
+    schedule_dict["kind"] = "cron"
 
     # mainの呼び出し
     result = main(
