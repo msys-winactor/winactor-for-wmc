@@ -17,15 +17,15 @@ DEPARTMENT3 = !所属(孫)!  # type: ignore
 DESCRIPTION = !メモ!  # type: ignore
 AUTO_LOGOUT = !オートログアウト(秒)!  # type: ignore
 EMAIL = !通知先メールアドレス!  # type: ignore
-APPROVAL = !承認通知|無効,有効!  # type: ignore
-TASK = !タスク異常通知|無効,有効!  # type: ignore
 WINACTOR = !WinActor異常通知|無効,有効!  # type: ignore
+WINACTOR_LICENSE = !ライセンス期限通知|無効,有効!  # type: ignore
+TASK = !タスク終了通知|無効,有効!  # type: ignore
+REMAINING_LICENSE = !ライセンス数上限通知|無効,有効!  # type: ignore
+TRAFFIC = !通信量上限通知|無効,有効!  # type: ignore
 WINACTOR_LIMIT = !WinActor接続数上限通知|無効,有効!  # type: ignore
 UNDEFINED_WINACTOR = !未所属WinActor接続通知|無効,有効!  # type: ignore
-WINACTOR_LICENSE = !WinActorライセンス期限通知|無効,有効!  # type: ignore
-TRAFFIC = !通信量超過通知|無効,有効!  # type: ignore
-STORAGE = !ストレージ使用量超過通知|無効,有効!  # type: ignore
-REMAINING_LICENSE = !ライセンス数上限通知|無効,有効!  # type: ignore
+APPROVAL = !承認通知|無効,有効!  # type: ignore
+STORAGE = !ストレージ使用量上限通知|無効,有効!  # type: ignore
 WINACTOR_ID = !WinActorID!  # type: ignore
 
 
