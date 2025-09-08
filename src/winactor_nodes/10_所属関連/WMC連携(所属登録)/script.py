@@ -9,9 +9,9 @@ from winactor_for_wmc.departments import post_departments
 # 各種パラメータ
 BASE_URL = !WMC URL!  # type: ignore
 TOKEN = !アクセストークン!  # type: ignore
+PARENT_DEPARTMENT = !追加先の所属(親)!  # type: ignore
+CHILD_DEPARTMENT = !追加先の所属(子)!  # type: ignore
 NAME = !所属名!  # type: ignore
-PARENT_DEPARTMENT = !親所属(名称)!  # type: ignore
-CHILD_DEPARTMENT = !子所属(名称)!  # type: ignore
 REMARKS = !メモ!  # type: ignore
 
 
