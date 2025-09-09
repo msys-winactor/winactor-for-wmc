@@ -164,17 +164,21 @@ def get_departments_ids_by_names(
 
     # 孫のみ 指定（親・子未指定）は上の事前チェックでエラー済みだが、
     # 念のため既存分岐も厳格化（残しておく）
-    if n1 is None and n2 is None and n3 is not None:
-        grandchildren = {it.get("department3") for it in candidates}
-        if len(grandchildren) != 1:
-            raise ValueError(
+    if n1 is None and n2 is None and n3 is not None:  # pragma: no cover
+        grandchildren = {it.get("department3") for it in candidates}  # pragma: no cover
+        if len(grandchildren) != 1:  # pragma: no cover
+            raise ValueError(  # pragma: no cover
                 "指定された所属が一意に定まりません（孫のみ）: "
                 f"department_name3={n3}"
             )
-        d3 = next(iter(grandchildren))
-        if d3 is None:
-            raise ValueError(f"孫所属が解決できません: department_name3={n3}")
-        return None, None, d3
+        d3 = next(iter(grandchildren))  # pragma: no cover
+        if d3 is None:  # pragma: no cover
+            raise ValueError(  # pragma: no cover
+                f"孫所属が解決できません: department_name3={n3}"
+            )
+        return None, None, d3  # pragma: no cover
 
     # どれにも当てはまらない場合（理論上来ない）
-    raise ValueError("所属の判定に失敗しました（不正な入力の組み合わせ）")
+    raise ValueError(
+        "所属の判定に失敗しました（不正な入力の組み合わせ）"
+    )  # pragma: no cover

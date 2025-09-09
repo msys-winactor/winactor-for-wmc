@@ -15,9 +15,9 @@ if __name__ == "__main__":
     TOKEN = !アクセストークン!  # type: ignore
     FILE_ID = !ファイルID!  # type: ignore
 
-    NAME = !変更後のファイル名!  # type: ignore
-    FILETAG = !変更後のファイルタグ!  # type: ignore
-    DESCRIPTION = !変更後のファイル説明!  # type: ignore
+    NAME = !更新後のファイル名!  # type: ignore
+    FILETAG = !更新後のファイルタグ!  # type: ignore
+    DESCRIPTION = !更新後のファイル説明!  # type: ignore
 
     # リクエストボディ作成（未入力は送らない）
     file_data = {}
