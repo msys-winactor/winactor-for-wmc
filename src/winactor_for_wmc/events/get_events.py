@@ -28,33 +28,48 @@ def run(**kwargs):
 
     # 部門名 → ID 変換（ID未指定時のみ補完）
     departments_url = raw_params.get("departments_url") or base_url
-    dn1 = raw_params.get("department_name1")
-    dn2 = raw_params.get("department_name2")
-    dn3 = raw_params.get("department_name3")
-    if (dn1 or dn2 or dn3) and not (
-        raw_params.get("department1")
-        or raw_params.get("department2")
-        or raw_params.get("department3")
-    ):
-        try:
-            dep_result = get_departments.get_departments(
-                base_url=departments_url, token=token
+    dn1 = _norm(raw_params.get("department_name1"))
+    dn2 = _norm(raw_params.get("department_name2"))
+    dn3 = _norm(raw_params.get("department_name3"))
+    has_names = any(x is not None for x in (dn1, dn2, dn3))
+    has_ids = any(
+        raw_params.get(k) is not None
+        for k in ("department1", "department2", "department3")
+    )
+
+    if has_names and not has_ids:
+        dep_result = get_departments.get_departments(
+            base_url=departments_url, token=token
+        )
+
+        # 共通側にラッパーがあればそれを使って例外を伝播
+        if hasattr(get_departments, "get_departments_ids_by_names_or_error"):
+            d1_id, d2_id, d3_id = get_departments.get_departments_ids_by_names_or_error(
+                dep_result,
+                department_name1=dn1,
+                department_name2=dn2,
+                department_name3=dn3,
             )
+        else:
+            # ラッパーが無い場合：従来関数で解決し、指定ありなのに全て未解決なら例外化
             d1_id, d2_id, d3_id = get_departments.get_departments_ids_by_names(
                 dep_result,
                 department_name1=dn1,
                 department_name2=dn2,
                 department_name3=dn3,
             )
-            if d1_id is not None:
-                raw_params["department1"] = d1_id
-            if d2_id is not None:
-                raw_params["department2"] = d2_id
-            if d3_id is not None:
-                raw_params["department3"] = d3_id
-        except Exception:
-            # 取得や変換に失敗しても処理は続行（部門条件なしで検索）
-            pass
+            if d1_id is None and d2_id is None and d3_id is None:
+                raise ValueError(
+                    "指定された所属が見つからないか一意に定まりません: "
+                    f"department_name1={dn1}, department_name2={dn2}, department_name3={dn3}"
+                )
+
+        if d1_id is not None:
+            raw_params["department1"] = d1_id
+        if d2_id is not None:
+            raw_params["department2"] = d2_id
+        if d3_id is not None:
+            raw_params["department3"] = d3_id
 
     # 許可されたパラメータのみ抽出
     allowed = (
@@ -78,7 +93,7 @@ def run(**kwargs):
     )
     params = {k: raw_params[k] for k in raw_params.keys() & set(allowed)}
 
-    # リスト系のキーは list 化しておく（呼び出し側がカンマ区切り文字列等を渡す場合にも対応）
+    # リスト系のキーは list 化
     for key in ("level[]", "label[]", "winactorId[]"):
         if key in params:
             params[key] = _ensure_list(params[key])
@@ -86,6 +101,13 @@ def run(**kwargs):
     endpoint = "/events"
     client = WMCApiClient(base_url, token)
     return client.get(endpoint, params=params)
+
+
+def _norm(x):
+    if x is None:
+        return None
+    s = str(x).strip()
+    return s if s else None
 
 
 def _ensure_list(value):
@@ -128,12 +150,6 @@ def get_event_info(result, index=0):
       - index が数値化不可
       - レスポンスが不正（dictでない、または items が存在しない/空）
       - index 範囲外
-    返却フィールド（存在しないものは既定値）:
-      - level(int), label(int), winactorId(str), fileId(str), scenarioId(str),
-        scheduleId(str), taskId(str), userId(str), departmentId(str), roleId(str),
-        stageId(str), particularStageId(str), other(str), message(str),
-        subject(str), subjectDepartment(str), subjectRole(str),
-        createdTime(int), departmentName(str), subjectDepartmentName(str)
     """
     _ensure_index_provided(index, "イベントのインデックス")
 

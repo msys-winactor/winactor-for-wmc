@@ -60,6 +60,7 @@ class TestWMCApiClient:
             params={"limit": 10},
             files=None,
             timeout=30,
+            data=None,
         )
         assert result == {"data": "test"}
 
@@ -86,6 +87,7 @@ class TestWMCApiClient:
             params=None,
             files=None,
             timeout=30,
+            data=None,
         )
         assert result == {"id": 123}
 
@@ -109,6 +111,7 @@ class TestWMCApiClient:
             params=None,
             files=files,
             timeout=30,
+            data=None,  # dataは指定していないためNone
         )
         assert result == {"file_id": 456}
 
@@ -135,6 +138,7 @@ class TestWMCApiClient:
             params=None,
             files=None,
             timeout=30,
+            data=None,
         )
         assert result == {"success": True}
 
@@ -159,6 +163,7 @@ class TestWMCApiClient:
             params=None,
             files=None,
             timeout=30,
+            data=None,
         )
         assert result == {}  # 空のレスポンスは空の辞書
 
@@ -185,6 +190,7 @@ class TestWMCApiClient:
             params=None,
             files=None,
             timeout=30,
+            data=None,
         )
         assert result == {"updated": True}
 
