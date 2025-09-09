@@ -1,3 +1,4 @@
+# winactor_for_wmc/common/get_departments.py
 from winactor_for_wmc.common.client import WMCApiClient
 
 
@@ -52,12 +53,14 @@ def get_departments_ids_by_names(
     取得した所属一覧(result)から、部門名（1/2/3）で整合する行を見つけ、
     department1/2/3 のIDを返す。
 
-    仕様（完全版）:
-    - 空文字や空白のみは未指定(None)として扱う。
-    - 同一の行で整合する候補を抽出してから判定する。
-    - 指定階層がすべて埋まっていなくても、指定された範囲で一意に定まれば、
-      その階層までの ID を返し、未指定の下位は None を返す。
-    - 一意に定まらない、または一致行がない場合は (None, None, None) を返す。
+    変更点（エラー化のための厳格運用をデフォルト化）:
+    - 入力正規化後に次を満たす場合は例外(ValueError)を送出します。
+      * 子(department2)指定があるのに親(department1)未指定
+      * 孫(department3)指定があるのに親/子未指定
+      * 指定があるのに一致行が0件
+      * 指定があるのに候補が複数で一意に定まらない
+      * 指定した階層のIDが解決できない（例: 親名は指定したが親IDが取れない）
+    - 3階層すべて未指定（空/空白含む）の場合のみ、(None, None, None) を返します。
     """
     items = result.get("items", []) or []
 
@@ -78,9 +81,15 @@ def get_departments_ids_by_names(
     n2 = norm_in(department_name2)
     n3 = norm_in(department_name3)
 
-    # 何も指定がなければ決めようがない
+    # 何も指定がなければ呼び出し側（未所属リセットなど）に委ねる
     if n1 is None and n2 is None and n3 is None:
         return None, None, None
+
+    # 運用ルールの事前チェック
+    if n2 is not None and n1 is None:
+        raise ValueError("子所属を指定する場合は親所属も指定してください。")
+    if n3 is not None and (n1 is None or n2 is None):
+        raise ValueError("孫所属を指定する場合は親所属と子所属も指定してください。")
 
     # 指定条件に一致する「同一行」候補を抽出
     candidates = [
@@ -91,50 +100,81 @@ def get_departments_ids_by_names(
         and (n3 is None or norm_item(it.get("departmentName3")) == n3)
     ]
 
+    # 一致行ゼロならエラー
     if not candidates:
-        return None, None, None
+        raise ValueError(
+            "指定された所属が見つかりません: "
+            f"department_name1={n1}, department_name2={n2}, department_name3={n3}"
+        )
 
-    # 3階層すべて指定 → 完全一致の先頭を採用
+    # 3階層すべて指定 → 完全一致の先頭を採用（候補が複数でもIDは同一想定、異なるなら後続チェックで弾く）
     if n1 is not None and n2 is not None and n3 is not None:
         row = candidates[0]
-        return row.get("department1"), row.get("department2"), row.get("department3")
+        d1, d2, d3 = (
+            row.get("department1"),
+            row.get("department2"),
+            row.get("department3"),
+        )
+        # 念のため整合性確認（候補群でIDが食い違えば曖昧とみなす）
+        if any(
+            (it.get("department1"), it.get("department2"), it.get("department3"))
+            != (d1, d2, d3)
+            for it in candidates
+        ):
+            raise ValueError(
+                "指定された所属が一意に定まりません（親+子+孫）: "
+                f"department_name1={n1}, department_name2={n2}, department_name3={n3}"
+            )
+        return d1, d2, d3
 
-    # 親＋子 指定（孫未指定）→ (親, 子) の組み合わせが一意なら返す
+    # 親＋子 指定（孫未指定）→ (親, 子) の組み合わせが一意であることを要求
     if n1 is not None and n2 is not None and n3 is None:
         pairs = {(it.get("department1"), it.get("department2")) for it in candidates}
-        if len(pairs) == 1:
-            d1, d2 = next(iter(pairs))
-            return d1, d2, None
-        return None, None, None
+        if len(pairs) != 1:
+            raise ValueError(
+                "指定された所属が一意に定まりません（親+子）: "
+                f"department_name1={n1}, department_name2={n2}"
+            )
+        d1, d2 = next(iter(pairs))
+        # 安全のため None チェック
+        if d1 is None:
+            raise ValueError(f"親所属が解決できません: department_name1={n1}")
+        if d2 is None:
+            raise ValueError(
+                f"子所属が解決できません: department_name2={n2}（親: {n1}）"
+            )
+        return d1, d2, None
 
-    # 親のみ 指定 → 親ID が一意なら親だけ返す
+    # 親のみ 指定 → 親ID が一意であることを要求
     if n1 is not None and n2 is None and n3 is None:
         parents = {it.get("department1") for it in candidates}
-        if len(parents) == 1:
-            return next(iter(parents)), None, None
-        return None, None, None
+        if len(parents) != 1:
+            raise ValueError(
+                "指定された所属が一意に定まりません（親のみ）: "
+                f"department_name1={n1}"
+            )
+        d1 = next(iter(parents))
+        if d1 is None:
+            raise ValueError(f"親所属が解決できません: department_name1={n1}")
+        return d1, None, None
 
-    # 子のみ 指定 → 子ID が一意なら子だけ返す（親・孫は None）
-    if n1 is None and n2 is not None and n3 is None:
-        children = {it.get("department2") for it in candidates}
-        if len(children) == 1:
-            return None, next(iter(children)), None
-        return None, None, None
+    # 子のみ 指定（親未指定）は上の事前チェックでエラー済み
 
-    # 子＋孫 指定（親未指定）→ (子, 孫) が一意なら返す（親は None）
-    if n1 is None and n2 is not None and n3 is not None:
-        pairs = {(it.get("department2"), it.get("department3")) for it in candidates}
-        if len(pairs) == 1:
-            d2, d3 = next(iter(pairs))
-            return None, d2, d3
-        return None, None, None
+    # 子＋孫 指定（親未指定）は上の事前チェックでエラー済み
 
-    # 孫のみ 指定 → 孫ID が一意なら孫だけ返す
+    # 孫のみ 指定（親・子未指定）は上の事前チェックでエラー済みだが、
+    # 念のため既存分岐も厳格化（残しておく）
     if n1 is None and n2 is None and n3 is not None:
         grandchildren = {it.get("department3") for it in candidates}
-        if len(grandchildren) == 1:
-            return None, None, next(iter(grandchildren))
-        return None, None, None
+        if len(grandchildren) != 1:
+            raise ValueError(
+                "指定された所属が一意に定まりません（孫のみ）: "
+                f"department_name3={n3}"
+            )
+        d3 = next(iter(grandchildren))
+        if d3 is None:
+            raise ValueError(f"孫所属が解決できません: department_name3={n3}")
+        return None, None, d3
 
-    # どれにも当てはまらない場合
-    return None, None, None
+    # どれにも当てはまらない場合（理論上来ない）
+    raise ValueError("所属の判定に失敗しました（不正な入力の組み合わせ）")

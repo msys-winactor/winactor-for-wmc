@@ -99,9 +99,16 @@ if __name__ == "__main__":
         "size": SIZE,  # 固定値
     }
 
-    # 特例: 所属(親) が「共有」、所属(子)/所属(孫) が空欄なら department1="0"
-    if (_norm(DEPARTMENT_NAME1) == "共有") and (not _norm(DEPARTMENT_NAME2)) and (not _norm(DEPARTMENT_NAME3)):
-        raw_params["department1"] = "0"
+    # 特例: 親=「共有」かつ 子/孫が空欄なら、ID 0 に置換し名称キーを削除して変換処理をスキップ
+    dn1 = _norm(DEPARTMENT_NAME1)
+    dn2 = _norm(DEPARTMENT_NAME2)
+    dn3 = _norm(DEPARTMENT_NAME3)
+    if (dn1 == "共有") and (not dn2) and (not dn3):
+        raw_params["department1"] = 0  # 数値 0 を設定
+        # 名称キーは渡さない（モジュール側の名称→ID変換を確実にスキップする）
+        raw_params.pop("department_name1", None)
+        raw_params.pop("department_name2", None)
+        raw_params.pop("department_name3", None)
 
     params = {k: v for k, v in raw_params.items() if v not in (None, "", [])}
 
