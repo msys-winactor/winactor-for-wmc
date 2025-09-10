@@ -1,0 +1,31 @@
+■機能概要
+　ユーザ情報のインポートを行います。
+
+■バージョン
+　1.0.0
+
+■設定項目
+[WMC URL]
+　WMC URLを指定します。末尾の「/」はありなしどちらでもかまいません。
+
+[アクセストークン]
+　アクセストークンを指定します。
+
+[CSVファイル名]
+　CSVファイルの出力先をフルパスで指定します。
+
+[エンコーディング]
+　文字エンコーディングを指定します。
+
+[処理区分]
+　処理区分を指定します。
+　CSVファイルの各行のカラム構成は
+　'ユーザ名,所属ID,所属名,ロール名,オートログアウト,メモ,パスワード,通知先メールアドレス,承認通知有無,タスク異常通知有無,WinActor異常通知有無,WinActor接続数上限通知有無,未所属WinActor接続通知有無,WinActorライセンス期限通知有無,通信量超過通知有無,ストレージ使用量超過通知有無,ライセンス数上限通知有無,WinActorID' 
+　となります。
+　先頭行はヘッダ行とし、以下の固定データが入ります。
+　'name,departmentId,departmentName,role,autoLogout,description,password,email,notifyApproval,notifyTask,notifyWinactor,notifyWinactorLimit,notifyUndefinedWinactor,notifyWinactorLicense,notifyTraffic,notifyStorage,notifyRemainingLicense,winactorId' 
+
+　改行コードは「CRLF」です。 新規登録時にはパスワードが、更新時にはロールが、削除時にはユーザ名が必須となります。
+　ヘッダを除き10000件を超えるファイルの場合、エラーとなります。
+
+　　　　　　　　　　　　　　　　　　　　　　(c) 丸紅情報システムズ
