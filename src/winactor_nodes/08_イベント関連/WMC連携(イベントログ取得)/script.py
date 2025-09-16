@@ -69,7 +69,7 @@ if __name__ == "__main__":
 
     MESSAGE = !メッセージ!  # type: ignore
 
-    # ソート・ページング（PAGE は渡さない、SIZE は固定 100）
+    # ソート・ページング
     SORT = !ソート項目|登録日時,重要度,メッセージ!  # type: ignore
     if SORT == "登録日時":
         SORT = "createdAt"
@@ -83,8 +83,6 @@ if __name__ == "__main__":
         SORT_DIR = "desc"
     elif SORT_DIR == "昇順":
         SORT_DIR = "asc"
-
-    SIZE = 100  # 取得件数は固定
 
     # 値があるものだけ params に入れる（前後空白は除去）
     def _norm(v):
@@ -113,7 +111,6 @@ if __name__ == "__main__":
         "message": _norm(MESSAGE),
         "sort": _norm(SORT),
         "sortDirection": _norm(SORT_DIR),
-        "size": SIZE,  # 固定値
     }
 
     # 特例: 親=「共有」かつ 子/孫が空欄なら、ID 0 に置換し名称キーを削除して変換処理をスキップ
@@ -133,8 +130,15 @@ if __name__ == "__main__":
     # 実行（params はトップレベル kwargs として渡す）
     result = main(base_url=BASE_URL, token=TOKEN, **params)
 
-    # イベント情報（指定INDEX）の全項目を取得（未指定/不正/範囲外はモジュール側で例外）
-    event = get_events.get_event_info(result, INDEX)
+    # イベント情報（指定INDEX）の全項目を取得
+    # 大きなインデックスに対応するため、base_url, token, 検索条件を渡す
+    event = get_events.get_event_info(
+        result, 
+        INDEX, 
+        base_url=BASE_URL, 
+        token=TOKEN, 
+        **params  # 検索条件も渡す
+    )
 
     # 取得結果を WinActor 変数に格納
     winactor.set_variable($重要度$, event["level"])                       # type: ignore
