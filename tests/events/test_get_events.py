@@ -4,7 +4,8 @@ import pytest
 from winactor_for_wmc.events import get_events
 
 
-def test_run_all_departments(mocker):
+def test_run_all_departments_without_wrapper(mocker):
+    """ラッパー関数が存在しない場合のテスト"""
     mock_get_departments = mocker.patch(
         "winactor_for_wmc.events.get_events.get_departments"
     )
@@ -20,9 +21,8 @@ def test_run_all_departments(mocker):
         ]
     }
     mock_get_departments.get_departments_ids_by_names.return_value = ("1", "2", "3")
-    # ラッパー関数が存在しないことを明示的に設定
-    if hasattr(mock_get_departments, "get_departments_ids_by_names_or_error"):
-        del mock_get_departments.get_departments_ids_by_names_or_error
+    # ラッパー関数が存在しないことを確実にする
+    del mock_get_departments.get_departments_ids_by_names_or_error
     mock_client.get.return_value = {"result": "OK"}
 
     result = get_events.run(
@@ -65,7 +65,62 @@ def test_run_all_departments(mocker):
     assert result == {"result": "OK"}
 
 
-def test_run_partial_departments(mocker):
+def test_run_all_departments_with_wrapper(mocker):
+    """ラッパー関数が存在する場合のテスト"""
+    mock_get_departments = mocker.patch(
+        "winactor_for_wmc.events.get_events.get_departments"
+    )
+    mock_client_class = mocker.patch("winactor_for_wmc.events.get_events.WMCApiClient")
+    mock_client = mock_client_class.return_value
+
+    # 部門取得モック
+    mock_get_departments.get_departments.return_value = {
+        "items": [
+            {"departmentName1": "A", "department1": "1"},
+            {"departmentName2": "B", "department2": "2"},
+            {"departmentName3": "C", "department3": "3"},
+        ]
+    }
+    # ラッパー関数を存在させ、戻り値を設定
+    mock_get_departments.get_departments_ids_by_names_or_error.return_value = (
+        "1",
+        "2",
+        "3",
+    )
+    mock_client.get.return_value = {"result": "OK"}
+
+    result = get_events.run(
+        base_url="https://example.com",
+        token="dummy_token",
+        department_name1="A",
+        department_name2="B",
+        department_name3="C",
+    )
+
+    mock_get_departments.get_departments.assert_called_once_with(
+        base_url="https://example.com", token="dummy_token"
+    )
+    # ラッパー関数が呼ばれることを確認
+    mock_get_departments.get_departments_ids_by_names_or_error.assert_called_once_with(
+        {
+            "items": [
+                {"departmentName1": "A", "department1": "1"},
+                {"departmentName2": "B", "department2": "2"},
+                {"departmentName3": "C", "department3": "3"},
+            ]
+        },
+        department_name1="A",
+        department_name2="B",
+        department_name3="C",
+    )
+    # 通常の関数は呼ばれない
+    mock_get_departments.get_departments_ids_by_names.assert_not_called()
+
+    assert result == {"result": "OK"}
+
+
+def test_run_partial_departments_without_wrapper(mocker):
+    """ラッパー関数が存在しない場合の部分部門テスト"""
     mock_get_departments = mocker.patch(
         "winactor_for_wmc.events.get_events.get_departments"
     )
@@ -77,9 +132,8 @@ def test_run_partial_departments(mocker):
         "items": [{"departmentName1": "A", "department1": "1"}]
     }
     mock_get_departments.get_departments_ids_by_names.return_value = ("1", None, None)
-    # ラッパー関数が存在しないことを明示的に設定
-    if hasattr(mock_get_departments, "get_departments_ids_by_names_or_error"):
-        del mock_get_departments.get_departments_ids_by_names_or_error
+    # ラッパー関数が存在しないことを確実にする
+    del mock_get_departments.get_departments_ids_by_names_or_error
     mock_client.get.return_value = {"result": "OK"}
 
     result = get_events.run(
@@ -102,6 +156,42 @@ def test_run_partial_departments(mocker):
     assert params["department1"] == "1"
     assert "department2" not in params
     assert "department3" not in params
+
+    assert result == {"result": "OK"}
+
+
+def test_run_partial_departments_with_wrapper(mocker):
+    """ラッパー関数が存在する場合の部分部門テスト"""
+    mock_get_departments = mocker.patch(
+        "winactor_for_wmc.events.get_events.get_departments"
+    )
+    mock_client_class = mocker.patch("winactor_for_wmc.events.get_events.WMCApiClient")
+    mock_client = mock_client_class.return_value
+
+    # 1部門のみ
+    mock_get_departments.get_departments.return_value = {
+        "items": [{"departmentName1": "A", "department1": "1"}]
+    }
+    # ラッパー関数を存在させ、戻り値を設定
+    mock_get_departments.get_departments_ids_by_names_or_error.return_value = (
+        "1",
+        None,
+        None,
+    )
+    mock_client.get.return_value = {"result": "OK"}
+
+    result = get_events.run(
+        base_url="https://example.com",
+        token="dummy_token",
+        department_name1="A",
+        department_name2=None,
+        department_name3=None,
+    )
+
+    # ラッパー関数が呼ばれることを確認
+    mock_get_departments.get_departments_ids_by_names_or_error.assert_called_once()
+    # 通常の関数は呼ばれない
+    mock_get_departments.get_departments_ids_by_names.assert_not_called()
 
     assert result == {"result": "OK"}
 
@@ -137,6 +227,86 @@ def test_run_no_departments(mocker):
     assert "department3" not in params
 
     assert result == {"result": "OK"}
+
+
+def test_run_department_names_not_found_raises_error_without_wrapper(mocker):
+    """ラッパー関数が無い場合で、すべて None が返される場合はエラー"""
+    mock_get_departments = mocker.patch(
+        "winactor_for_wmc.events.get_events.get_departments"
+    )
+    mock_client_class = mocker.patch("winactor_for_wmc.events.get_events.WMCApiClient")
+
+    mock_get_departments.get_departments.return_value = {"items": []}
+    mock_get_departments.get_departments_ids_by_names.return_value = (None, None, None)
+    # ラッパー関数が存在しないことを確実にする
+    del mock_get_departments.get_departments_ids_by_names_or_error
+
+    with pytest.raises(
+        ValueError, match="指定された所属が見つからないか一意に定まりません"
+    ):
+        get_events.run(
+            base_url="https://example.com",
+            token="dummy_token",
+            department_name1="NotFound",
+        )
+
+
+def test_run_with_wrapper_function_uses_wrapper(mocker):
+    # ラッパー関数が存在する場合はそれを使用
+    mock_get_departments = mocker.patch(
+        "winactor_for_wmc.events.get_events.get_departments"
+    )
+    mock_client_class = mocker.patch("winactor_for_wmc.events.get_events.WMCApiClient")
+    mock_client = mock_client_class.return_value
+
+    mock_get_departments.get_departments.return_value = {"items": []}
+    mock_get_departments.get_departments_ids_by_names_or_error.return_value = (
+        "1",
+        None,
+        None,
+    )
+    mock_client.get.return_value = {"result": "OK"}
+
+    result = get_events.run(
+        base_url="https://example.com",
+        token="dummy_token",
+        department_name1="A",
+    )
+
+    # ラッパー関数が呼ばれることを確認
+    mock_get_departments.get_departments_ids_by_names_or_error.assert_called_once()
+    # 通常の関数は呼ばれない
+    mock_get_departments.get_departments_ids_by_names.assert_not_called()
+    assert result == {"result": "OK"}
+
+
+def test_run_missing_credentials_returns_empty(mocker):
+    # WMCApiClient をモック
+    mock_client_class = mocker.patch("winactor_for_wmc.events.get_events.WMCApiClient")
+    mock_client = mock_client_class.return_value
+    mock_client.get.return_value = {"result": "OK"}
+
+    # base_url/token のいずれかが不足・空文字なら {} を返す
+    res1 = get_events.run(token="dummy_token")  # base_url なし
+    res2 = get_events.run(base_url="https://example.com")  # token なし
+    res3 = get_events.run(base_url="", token="dummy_token")  # base_url 空文字
+    res5 = get_events.run(base_url="https://example.com", token="")  # token 空文字
+
+    assert res1 == {}
+    assert res2 == {}
+    assert res3 == {}
+    assert res5 == {}
+
+    # 空白のみの文字列は truthy のため、現行実装では API が呼ばれる
+    res4 = get_events.run(base_url="   ", token="dummy_token")
+    res6 = get_events.run(base_url="https://example.com", token="   ")
+    assert res4 == {"result": "OK"}
+    assert res6 == {"result": "OK"}
+
+    # 空白ケースの2回だけクライアント生成される
+    assert mock_client_class.call_count == 2
+    # /events が2回呼ばれている
+    assert mock_client.get.call_count == 2
 
 
 def test_run_list_params_are_normalized(mocker):
@@ -222,114 +392,6 @@ def test_run_skip_department_lookup_when_ids_already_given(mocker):
     assert result == {"result": "OK"}
 
 
-def test_run_departments_url_override_used(mocker):
-    mock_get_departments = mocker.patch(
-        "winactor_for_wmc.events.get_events.get_departments"
-    )
-    mock_client_class = mocker.patch("winactor_for_wmc.events.get_events.WMCApiClient")
-    mock_client = mock_client_class.return_value
-    mock_client.get.return_value = {"result": "OK"}
-
-    mock_get_departments.get_departments.return_value = {"items": []}
-    mock_get_departments.get_departments_ids_by_names.return_value = ("1", None, None)
-    # ラッパー関数が存在しないことを明示的に設定
-    if hasattr(mock_get_departments, "get_departments_ids_by_names_or_error"):
-        del mock_get_departments.get_departments_ids_by_names_or_error
-
-    result = get_events.run(
-        base_url="https://api-base",
-        token="dummy_token",
-        departments_url="https://departments-base",
-        department_name1="A",
-    )
-
-    mock_get_departments.get_departments.assert_called_once_with(
-        base_url="https://departments-base", token="dummy_token"
-    )
-    assert result == {"result": "OK"}
-
-
-def test_run_missing_credentials_returns_empty(mocker):
-    # WMCApiClient をモック
-    mock_client_class = mocker.patch("winactor_for_wmc.events.get_events.WMCApiClient")
-    mock_client = mock_client_class.return_value
-    mock_client.get.return_value = {"result": "OK"}
-
-    # base_url/token のいずれかが不足・空文字なら {} を返す
-    res1 = get_events.run(token="dummy_token")  # base_url なし
-    res2 = get_events.run(base_url="https://example.com")  # token なし
-    res3 = get_events.run(base_url="", token="dummy_token")  # base_url 空文字
-    res5 = get_events.run(base_url="https://example.com", token="")  # token 空文字
-
-    assert res1 == {}
-    assert res2 == {}
-    assert res3 == {}
-    assert res5 == {}
-
-    # 空白のみの文字列は truthy のため、現行実装では API が呼ばれる
-    res4 = get_events.run(base_url="   ", token="dummy_token")
-    res6 = get_events.run(base_url="https://example.com", token="   ")
-    assert res4 == {"result": "OK"}
-    assert res6 == {"result": "OK"}
-
-    # 空白ケースの2回だけクライアント生成される
-    assert mock_client_class.call_count == 2
-    # /events が2回呼ばれている
-    assert mock_client.get.call_count == 2
-
-
-def test_run_department_names_not_found_raises_error(mocker):
-    # ラッパー関数が無い場合で、すべて None が返される場合はエラー
-    mock_get_departments = mocker.patch(
-        "winactor_for_wmc.events.get_events.get_departments"
-    )
-    mock_client_class = mocker.patch("winactor_for_wmc.events.get_events.WMCApiClient")
-
-    mock_get_departments.get_departments.return_value = {"items": []}
-    mock_get_departments.get_departments_ids_by_names.return_value = (None, None, None)
-    # ラッパー関数が存在しないことを明示的に設定
-    if hasattr(mock_get_departments, "get_departments_ids_by_names_or_error"):
-        del mock_get_departments.get_departments_ids_by_names_or_error
-
-    with pytest.raises(
-        ValueError, match="指定された所属が見つからないか一意に定まりません"
-    ):
-        get_events.run(
-            base_url="https://example.com",
-            token="dummy_token",
-            department_name1="NotFound",
-        )
-
-
-def test_run_with_wrapper_function_uses_wrapper(mocker):
-    # ラッパー関数が存在する場合はそれを使用
-    mock_get_departments = mocker.patch(
-        "winactor_for_wmc.events.get_events.get_departments"
-    )
-    mock_client_class = mocker.patch("winactor_for_wmc.events.get_events.WMCApiClient")
-    mock_client = mock_client_class.return_value
-
-    mock_get_departments.get_departments.return_value = {"items": []}
-    mock_get_departments.get_departments_ids_by_names_or_error.return_value = (
-        "1",
-        None,
-        None,
-    )
-    mock_client.get.return_value = {"result": "OK"}
-
-    result = get_events.run(
-        base_url="https://example.com",
-        token="dummy_token",
-        department_name1="A",
-    )
-
-    # ラッパー関数が呼ばれることを確認
-    mock_get_departments.get_departments_ids_by_names_or_error.assert_called_once()
-    # 通常の関数は呼ばれない
-    mock_get_departments.get_departments_ids_by_names.assert_not_called()
-    assert result == {"result": "OK"}
-
-
 def test_run_params_vs_kwargs_priority(mocker):
     # params と kwargs の両方が指定された場合、params が優先される（setdefault の動作）
     mocker.patch("winactor_for_wmc.events.get_events.get_departments")
@@ -353,38 +415,6 @@ def test_run_params_vs_kwargs_priority(mocker):
     assert params["page"] == 1  # params の値が優先
     assert params["size"] == 10
     assert params["sort"] == "createdTime"  # kwargs で追加
-    assert result == {"result": "OK"}
-
-
-def test_run_whitespace_department_names_normalized(mocker):
-    # 前後空白の処理をテスト
-    mock_get_departments = mocker.patch(
-        "winactor_for_wmc.events.get_events.get_departments"
-    )
-    mock_client_class = mocker.patch("winactor_for_wmc.events.get_events.WMCApiClient")
-    mock_client = mock_client_class.return_value
-
-    mock_get_departments.get_departments.return_value = {"items": []}
-    mock_get_departments.get_departments_ids_by_names.return_value = ("1", None, None)
-    # ラッパー関数が存在しないことを明示的に設定
-    if hasattr(mock_get_departments, "get_departments_ids_by_names_or_error"):
-        del mock_get_departments.get_departments_ids_by_names_or_error
-    mock_client.get.return_value = {"result": "OK"}
-
-    result = get_events.run(
-        base_url="https://example.com",
-        token="dummy_token",
-        department_name1="  A  ",  # 前後空白
-        department_name2="   ",  # 空白のみ → None
-        department_name3="",  # 空文字列 → None
-    )
-
-    mock_get_departments.get_departments_ids_by_names.assert_called_once_with(
-        {"items": []},
-        department_name1="A",  # 空白除去
-        department_name2=None,  # 空白のみは None
-        department_name3=None,  # 空文字列は None
-    )
     assert result == {"result": "OK"}
 
 
@@ -462,8 +492,136 @@ def test_run_list_params_from_various_types(mocker):
     assert result == {"result": "OK"}
 
 
-def test_run_department_names_some_resolved(mocker):
-    # 部門名の一部が解決される場合
+def test_run_departments_url_override_used_without_wrapper(mocker):
+    """ラッパー関数が存在しない場合のdepartments_url上書きテスト"""
+    mock_get_departments = mocker.patch(
+        "winactor_for_wmc.events.get_events.get_departments"
+    )
+    mock_client_class = mocker.patch("winactor_for_wmc.events.get_events.WMCApiClient")
+    mock_client = mock_client_class.return_value
+    mock_client.get.return_value = {"result": "OK"}
+
+    mock_get_departments.get_departments.return_value = {"items": []}
+    mock_get_departments.get_departments_ids_by_names.return_value = ("1", None, None)
+    # ラッパー関数が存在しないことを確実にする
+    del mock_get_departments.get_departments_ids_by_names_or_error
+
+    result = get_events.run(
+        base_url="https://api-base",
+        token="dummy_token",
+        departments_url="https://departments-base",
+        department_name1="A",
+    )
+
+    mock_get_departments.get_departments.assert_called_once_with(
+        base_url="https://departments-base", token="dummy_token"
+    )
+    assert result == {"result": "OK"}
+
+
+def test_run_departments_url_override_used_with_wrapper(mocker):
+    """ラッパー関数が存在する場合のdepartments_url上書きテスト"""
+    mock_get_departments = mocker.patch(
+        "winactor_for_wmc.events.get_events.get_departments"
+    )
+    mock_client_class = mocker.patch("winactor_for_wmc.events.get_events.WMCApiClient")
+    mock_client = mock_client_class.return_value
+    mock_client.get.return_value = {"result": "OK"}
+
+    mock_get_departments.get_departments.return_value = {"items": []}
+    # ラッパー関数を存在させ、戻り値を設定
+    mock_get_departments.get_departments_ids_by_names_or_error.return_value = (
+        "1",
+        None,
+        None,
+    )
+
+    result = get_events.run(
+        base_url="https://api-base",
+        token="dummy_token",
+        departments_url="https://departments-base",
+        department_name1="A",
+    )
+
+    mock_get_departments.get_departments.assert_called_once_with(
+        base_url="https://departments-base", token="dummy_token"
+    )
+    # ラッパー関数が呼ばれることを確認
+    mock_get_departments.get_departments_ids_by_names_or_error.assert_called_once()
+    # 通常の関数は呼ばれない
+    mock_get_departments.get_departments_ids_by_names.assert_not_called()
+    assert result == {"result": "OK"}
+
+
+def test_run_whitespace_department_names_normalized_without_wrapper(mocker):
+    """ラッパー関数が存在しない場合の空白正規化テスト"""
+    mock_get_departments = mocker.patch(
+        "winactor_for_wmc.events.get_events.get_departments"
+    )
+    mock_client_class = mocker.patch("winactor_for_wmc.events.get_events.WMCApiClient")
+    mock_client = mock_client_class.return_value
+
+    mock_get_departments.get_departments.return_value = {"items": []}
+    mock_get_departments.get_departments_ids_by_names.return_value = ("1", None, None)
+    # ラッパー関数が存在しないことを確実にする
+    del mock_get_departments.get_departments_ids_by_names_or_error
+    mock_client.get.return_value = {"result": "OK"}
+
+    result = get_events.run(
+        base_url="https://example.com",
+        token="dummy_token",
+        department_name1="  A  ",  # 前後空白
+        department_name2="   ",  # 空白のみ → None
+        department_name3="",  # 空文字列 → None
+    )
+
+    mock_get_departments.get_departments_ids_by_names.assert_called_once_with(
+        {"items": []},
+        department_name1="A",  # 空白除去
+        department_name2=None,  # 空白のみは None
+        department_name3=None,  # 空文字列は None
+    )
+    assert result == {"result": "OK"}
+
+
+def test_run_whitespace_department_names_normalized_with_wrapper(mocker):
+    """ラッパー関数が存在する場合の空白正規化テスト"""
+    mock_get_departments = mocker.patch(
+        "winactor_for_wmc.events.get_events.get_departments"
+    )
+    mock_client_class = mocker.patch("winactor_for_wmc.events.get_events.WMCApiClient")
+    mock_client = mock_client_class.return_value
+
+    mock_get_departments.get_departments.return_value = {"items": []}
+    # ラッパー関数を存在させ、戻り値を設定
+    mock_get_departments.get_departments_ids_by_names_or_error.return_value = (
+        "1",
+        None,
+        None,
+    )
+    mock_client.get.return_value = {"result": "OK"}
+
+    result = get_events.run(
+        base_url="https://example.com",
+        token="dummy_token",
+        department_name1="  A  ",  # 前後空白
+        department_name2="   ",  # 空白のみ → None
+        department_name3="",  # 空文字列 → None
+    )
+
+    mock_get_departments.get_departments_ids_by_names_or_error.assert_called_once_with(
+        {"items": []},
+        department_name1="A",  # 空白除去
+        department_name2=None,  # 空白のみは None
+        department_name3=None,  # 空文字列は None
+    )
+    # 通常の関数は呼ばれない
+    mock_get_departments.get_departments_ids_by_names.assert_not_called()
+    assert result == {"result": "OK"}
+
+
+def test_run_department_names_some_resolved_without_wrapper(mocker):
+    """ラッパー関数が存在しない場合の部分解決テスト"""
     mock_get_departments = mocker.patch(
         "winactor_for_wmc.events.get_events.get_departments"
     )
@@ -472,9 +630,8 @@ def test_run_department_names_some_resolved(mocker):
 
     mock_get_departments.get_departments.return_value = {"items": []}
     mock_get_departments.get_departments_ids_by_names.return_value = ("1", None, "3")
-    # ラッパー関数が存在しないことを明示的に設定
-    if hasattr(mock_get_departments, "get_departments_ids_by_names_or_error"):
-        del mock_get_departments.get_departments_ids_by_names_or_error
+    # ラッパー関数が存在しないことを確実にする
+    del mock_get_departments.get_departments_ids_by_names_or_error
     mock_client.get.return_value = {"result": "OK"}
 
     result = get_events.run(
@@ -496,8 +653,49 @@ def test_run_department_names_some_resolved(mocker):
     assert result == {"result": "OK"}
 
 
-def test_run_departments_url_in_params_dict_override_used(mocker):
-    # params dict 内に departments_url を指定した場合でも、部門取得に使われる
+def test_run_department_names_some_resolved_with_wrapper(mocker):
+    """ラッパー関数が存在する場合の部分解決テスト"""
+    mock_get_departments = mocker.patch(
+        "winactor_for_wmc.events.get_events.get_departments"
+    )
+    mock_client_class = mocker.patch("winactor_for_wmc.events.get_events.WMCApiClient")
+    mock_client = mock_client_class.return_value
+
+    mock_get_departments.get_departments.return_value = {"items": []}
+    # ラッパー関数を存在させ、戻り値を設定
+    mock_get_departments.get_departments_ids_by_names_or_error.return_value = (
+        "1",
+        None,
+        "3",
+    )
+    mock_client.get.return_value = {"result": "OK"}
+
+    result = get_events.run(
+        base_url="https://example.com",
+        token="dummy_token",
+        department_name1="A",
+        department_name2="NotFound",
+        department_name3="C",
+    )
+
+    # ラッパー関数が呼ばれることを確認
+    mock_get_departments.get_departments_ids_by_names_or_error.assert_called_once()
+    # 通常の関数は呼ばれない
+    mock_get_departments.get_departments_ids_by_names.assert_not_called()
+
+    mock_client.get.assert_called_once()
+    _, called_kwargs = mock_client.get.call_args
+    params = called_kwargs["params"]
+
+    # 解決されたもののみ含まれる
+    assert params["department1"] == "1"
+    assert "department2" not in params  # None のため除外
+    assert params["department3"] == "3"
+    assert result == {"result": "OK"}
+
+
+def test_run_only_department_name2_is_resolved_without_wrapper(mocker):
+    """ラッパー関数が存在しない場合でdepartment2のみが解決される場合のテスト"""
     mock_get_departments = mocker.patch(
         "winactor_for_wmc.events.get_events.get_departments"
     )
@@ -506,26 +704,28 @@ def test_run_departments_url_in_params_dict_override_used(mocker):
     mock_client.get.return_value = {"result": "OK"}
 
     mock_get_departments.get_departments.return_value = {"items": []}
-    mock_get_departments.get_departments_ids_by_names.return_value = ("1", None, None)
-    # ラッパー関数が存在しないことを明示的に設定
-    if hasattr(mock_get_departments, "get_departments_ids_by_names_or_error"):
-        del mock_get_departments.get_departments_ids_by_names_or_error
+    mock_get_departments.get_departments_ids_by_names.return_value = (None, "2", None)
+    # ラッパー関数が存在しないことを確実にする
+    del mock_get_departments.get_departments_ids_by_names_or_error
 
     result = get_events.run(
-        base_url="https://api-base",
+        base_url="https://example.com",
         token="dummy_token",
-        params={"departments_url": "https://dep-base"},  # params 側で指定
-        department_name1="A",
+        department_name2="B",
     )
 
-    mock_get_departments.get_departments.assert_called_once_with(
-        base_url="https://dep-base", token="dummy_token"
-    )
+    mock_get_departments.get_departments_ids_by_names.assert_called_once()
+    _, called_kwargs = mock_client.get.call_args
+    params = called_kwargs["params"]
+    # d2_id のみが設定される
+    assert "department1" not in params
+    assert params["department2"] == "2"
+    assert "department3" not in params
     assert result == {"result": "OK"}
 
 
-def test_run_departments_url_empty_falls_back_to_base_url(mocker):
-    # departments_url が空文字などの falsy の場合、base_url にフォールバックする
+def test_run_only_department_name2_is_resolved_with_wrapper(mocker):
+    """ラッパー関数が存在する場合でdepartment2のみが解決される場合のテスト"""
     mock_get_departments = mocker.patch(
         "winactor_for_wmc.events.get_events.get_departments"
     )
@@ -534,27 +734,35 @@ def test_run_departments_url_empty_falls_back_to_base_url(mocker):
     mock_client.get.return_value = {"result": "OK"}
 
     mock_get_departments.get_departments.return_value = {"items": []}
-    mock_get_departments.get_departments_ids_by_names.return_value = ("1", None, None)
-    # ラッパー関数が存在しないことを明示的に設定
-    if hasattr(mock_get_departments, "get_departments_ids_by_names_or_error"):
-        del mock_get_departments.get_departments_ids_by_names_or_error
+    # ラッパー関数を存在させ、戻り値を設定
+    mock_get_departments.get_departments_ids_by_names_or_error.return_value = (
+        None,
+        "2",
+        None,
+    )
 
-    # departments_url に空文字を渡すと base_url が使われる
     result = get_events.run(
-        base_url="https://fallback-base",
+        base_url="https://example.com",
         token="dummy_token",
-        departments_url="",  # falsy → base_url にフォールバック
-        department_name1="A",
+        department_name2="B",
     )
 
-    mock_get_departments.get_departments.assert_called_once_with(
-        base_url="https://fallback-base", token="dummy_token"
-    )
+    # ラッパー関数が呼ばれることを確認
+    mock_get_departments.get_departments_ids_by_names_or_error.assert_called_once()
+    # 通常の関数は呼ばれない
+    mock_get_departments.get_departments_ids_by_names.assert_not_called()
+
+    _, called_kwargs = mock_client.get.call_args
+    params = called_kwargs["params"]
+    # d2_id のみが設定される
+    assert "department1" not in params
+    assert params["department2"] == "2"
+    assert "department3" not in params
     assert result == {"result": "OK"}
 
 
-def test_run_only_department_name3_is_resolved(mocker):
-    # d1_id=None を通し、d3_id のみ解決されるケース（未到達ブランチ 67->69 をカバー）
+def test_run_only_department_name3_is_resolved_without_wrapper(mocker):
+    """ラッパー関数が存在しない場合でdepartment3のみが解決される場合のテスト"""
     mock_get_departments = mocker.patch(
         "winactor_for_wmc.events.get_events.get_departments"
     )
@@ -564,9 +772,8 @@ def test_run_only_department_name3_is_resolved(mocker):
 
     mock_get_departments.get_departments.return_value = {"items": []}
     mock_get_departments.get_departments_ids_by_names.return_value = (None, None, "3")
-    # ラッパー関数が存在しないことを明示的に設定
-    if hasattr(mock_get_departments, "get_departments_ids_by_names_or_error"):
-        del mock_get_departments.get_departments_ids_by_names_or_error
+    # ラッパー関数が存在しないことを確実にする
+    del mock_get_departments.get_departments_ids_by_names_or_error
 
     result = get_events.run(
         base_url="https://example.com",
@@ -577,7 +784,44 @@ def test_run_only_department_name3_is_resolved(mocker):
     mock_get_departments.get_departments_ids_by_names.assert_called_once()
     _, called_kwargs = mock_client.get.call_args
     params = called_kwargs["params"]
-    # d1_id は None のため department1 は補完されない
+    # d3_id のみが設定される
+    assert "department1" not in params
+    assert "department2" not in params
+    assert params["department3"] == "3"
+    assert result == {"result": "OK"}
+
+
+def test_run_only_department_name3_is_resolved_with_wrapper(mocker):
+    """ラッパー関数が存在する場合でdepartment3のみが解決される場合のテスト"""
+    mock_get_departments = mocker.patch(
+        "winactor_for_wmc.events.get_events.get_departments"
+    )
+    mock_client_class = mocker.patch("winactor_for_wmc.events.get_events.WMCApiClient")
+    mock_client = mock_client_class.return_value
+    mock_client.get.return_value = {"result": "OK"}
+
+    mock_get_departments.get_departments.return_value = {"items": []}
+    # ラッパー関数を存在させ、戻り値を設定
+    mock_get_departments.get_departments_ids_by_names_or_error.return_value = (
+        None,
+        None,
+        "3",
+    )
+
+    result = get_events.run(
+        base_url="https://example.com",
+        token="dummy_token",
+        department_name3="C",
+    )
+
+    # ラッパー関数が呼ばれることを確認
+    mock_get_departments.get_departments_ids_by_names_or_error.assert_called_once()
+    # 通常の関数は呼ばれない
+    mock_get_departments.get_departments_ids_by_names.assert_not_called()
+
+    _, called_kwargs = mock_client.get.call_args
+    params = called_kwargs["params"]
+    # d3_id のみが設定される
     assert "department1" not in params
     assert "department2" not in params
     assert params["department3"] == "3"

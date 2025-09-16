@@ -1,4 +1,5 @@
 import sys
+from datetime import datetime
 
 sys.path.append("C:\\msys-winactor")
 sys.path.append("C:\\Users\\Public\\msys-winactor\\libs")
@@ -26,10 +27,40 @@ RETRYINTERVAL = !リトライ間隔(秒)!  # type: ignore
 DESCRIPTION = !メモ!  # type: ignore
 STATUS = !状態|有効,無効!  # type: ignore
 
+def validate_date_format(date_str):
+    """日付フォーマット(yyyy/MM/dd)をチェック"""
+    if not date_str or not date_str.strip():
+        return True  # 空の場合はOK
+    
+    try:
+        datetime.strptime(date_str.strip(), "%Y/%m/%d")
+        return True
+    except ValueError:
+        return False
+
+def validate_time_format(time_str):
+    """時間フォーマット(hh:mm:ss)をチェック"""
+    if not time_str or not time_str.strip():
+        return True  # 空の場合はOK
+    
+    try:
+        datetime.strptime(time_str.strip(), "%H:%M:%S")
+        return True
+    except ValueError:
+        return False
+
 def main(**kwargs):
     return put_schedules.run(**kwargs)
 
 if __name__ == "__main__":
+    # 日付フォーマットチェック
+    if not validate_date_format(TASKDATE):
+        raise winactor.WinActorError(1, f"日付指定日のフォーマットが正しくありません。yyyy/MM/dd形式で入力してください。入力値: {TASKDATE}")  # type: ignore
+    
+    # 時間フォーマットチェック
+    if not validate_time_format(TASKTIME):
+        raise winactor.WinActorError(1, f"実行時間のフォーマットが正しくありません。hh:mm:ss形式で入力してください。入力値: {TASKTIME}")  # type: ignore
+
     # 変換ロジック
     winactor_list = [w.strip() for w in WINACTOR.split(",") if w.strip()] if WINACTOR else []
     # 単一IDに変換

@@ -122,8 +122,8 @@ if __name__ == "__main__":
     else:
         first_item = result
     schedule_id = first_item.get("id", "")
-    winactor_id = first_item.get("winactorId", "")
+    # winactor_id = first_item.get("winactorId", "")
 
     # WinActor変数へセット
     winactor.set_variable($スケジュールID$, schedule_id)    # type: ignore
-    winactor.set_variable($WinActorID$, winactor_id)         # type: ignore
+    # winactor.set_variable($WinActorID$, winactor_id)         # type: ignore
