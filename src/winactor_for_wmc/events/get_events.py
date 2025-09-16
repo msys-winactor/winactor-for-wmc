@@ -98,6 +98,9 @@ def run(**kwargs):
         if key in params:
             params[key] = _ensure_list(params[key])
 
+    # ページサイズは固定100に設定
+    params["size"] = 100
+
     endpoint = "/events"
     client = WMCApiClient(base_url, token)
     return client.get(endpoint, params=params)
@@ -142,9 +145,18 @@ def _ensure_index_provided(index, name):
         raise ValueError(f"{name} が未指定です。")
 
 
-def get_event_info(result, index=0):
+def get_event_info(result, index=0, base_url=None, token=None, **search_params):
     """
     イベント一覧APIのレスポンスから指定インデックスのイベント情報を返す。
+    大きなインデックスの場合は、自動的に適切なページを取得する。
+
+    引数:
+      - result: 初回APIレスポンス
+      - index: 取得したいイベントのインデックス（0始まり）
+      - base_url: 追加取得用のベースURL（大きなインデックス時に使用）
+      - token: 追加取得用のトークン（大きなインデックス時に使用）
+      - **search_params: 検索条件（追加取得時に使用）
+
     例外発生条件:
       - index 未指定/空欄
       - index が数値化不可
@@ -156,20 +168,68 @@ def get_event_info(result, index=0):
     if not isinstance(result, dict):
         raise ValueError("APIレスポンスが不正です（dict ではありません）。")
 
-    items = result.get("items")
-    if not isinstance(items, list) or len(items) == 0:
-        raise ValueError("イベント情報が存在しません。")
-
     try:
         idx = int(index)
     except (TypeError, ValueError):
         raise ValueError("イベントのインデックスが数値ではありません。")
 
-    if idx < -len(items) or idx >= len(items):
+    items = result.get("items")
+    if not isinstance(items, list):
+        raise ValueError("イベント情報が存在しません。")
+
+    # 負数インデックスの場合は全件数が必要
+    if idx < 0:
+        total_count = result.get("totalCount", 0)
+        if total_count == 0:
+            raise ValueError("イベント情報が存在しません。")
+
+        # 負数インデックスを正数に変換
+        actual_idx = total_count + idx
+        if actual_idx < 0:
+            raise ValueError("イベントのインデックスが範囲外です。")
+        idx = actual_idx
+
+    # 現在のデータで足りるかチェック
+    if idx < len(items):
+        target = items[idx] or {}
+        return _build_event_info(target)
+
+    # 大きなインデックスの場合：追加取得が必要
+    if not base_url or not token:
         raise ValueError("イベントのインデックスが範囲外です。")
 
-    target = items[idx] or {}
+    page_size = 100  # 固定サイズ
+    target_page = (idx // page_size) + 1  # APIのページは1から始まる
+    index_in_page = idx % page_size
 
+    # 追加取得用のパラメータを構築
+    new_params = dict(search_params)
+    new_params["page"] = target_page
+    new_params["size"] = page_size
+
+    # リスト系のキーは list 化
+    for key in ("level[]", "label[]", "winactorId[]"):
+        if key in new_params:
+            new_params[key] = _ensure_list(new_params[key])
+
+    client = WMCApiClient(base_url, token)
+    new_result = client.get("/events", params=new_params)
+
+    new_items = new_result.get("items")
+    if not isinstance(new_items, list) or len(new_items) == 0:
+        raise ValueError("イベントのインデックスが範囲外です。")
+
+    if index_in_page >= len(new_items):
+        raise ValueError("イベントのインデックスが範囲外です。")
+
+    target = new_items[index_in_page] or {}
+    return _build_event_info(target)
+
+
+def _build_event_info(target):
+    """
+    イベント情報辞書を構築するヘルパー関数
+    """
     return {
         "level": _safe_int(target.get("level", 0), 0),
         "label": _safe_int(target.get("label", 0), 0),

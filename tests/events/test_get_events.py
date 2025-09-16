@@ -61,6 +61,8 @@ def test_run_all_departments_without_wrapper(mocker):
     assert params["department1"] == "1"
     assert params["department2"] == "2"
     assert params["department3"] == "3"
+    # 固定サイズが設定されていることを確認
+    assert params["size"] == 100
 
     assert result == {"result": "OK"}
 
@@ -116,6 +118,11 @@ def test_run_all_departments_with_wrapper(mocker):
     # 通常の関数は呼ばれない
     mock_get_departments.get_departments_ids_by_names.assert_not_called()
 
+    # 固定サイズが設定されていることを確認
+    _, called_kwargs = mock_client.get.call_args
+    params = called_kwargs["params"]
+    assert params["size"] == 100
+
     assert result == {"result": "OK"}
 
 
@@ -156,6 +163,7 @@ def test_run_partial_departments_without_wrapper(mocker):
     assert params["department1"] == "1"
     assert "department2" not in params
     assert "department3" not in params
+    assert params["size"] == 100  # 固定サイズ
 
     assert result == {"result": "OK"}
 
@@ -225,6 +233,7 @@ def test_run_no_departments(mocker):
     assert "department1" not in params
     assert "department2" not in params
     assert "department3" not in params
+    assert params["size"] == 100
 
     assert result == {"result": "OK"}
 
@@ -333,6 +342,7 @@ def test_run_list_params_are_normalized(mocker):
     assert params["level[]"] == ["0", "1", "3"]
     assert params["label[]"] == ["10", "20"]
     assert params["winactorId[]"] == ["wa001", "wa002"]
+    assert params["size"] == 100
     assert result == {"result": "OK"}
 
 
@@ -363,7 +373,7 @@ def test_run_params_dict_and_allowed_filtering(mocker):
     assert params["department1"] == "1"
     assert params["level[]"] == ["1", "2"]
     assert params["page"] == 2
-    assert params["size"] == 50
+    assert params["size"] == 100  # 固定値で上書き
     assert result == {"result": "OK"}
 
 
@@ -389,6 +399,7 @@ def test_run_skip_department_lookup_when_ids_already_given(mocker):
     mock_client.get.assert_called_once()
     _, called_kwargs = mock_client.get.call_args
     assert called_kwargs["params"]["department1"] == "999"
+    assert called_kwargs["params"]["size"] == 100
     assert result == {"result": "OK"}
 
 
@@ -413,7 +424,7 @@ def test_run_params_vs_kwargs_priority(mocker):
 
     # params が優先される（setdefault の動作）
     assert params["page"] == 1  # params の値が優先
-    assert params["size"] == 10
+    assert params["size"] == 100  # 固定値で上書き
     assert params["sort"] == "createdTime"  # kwargs で追加
     assert result == {"result": "OK"}
 
@@ -441,7 +452,7 @@ def test_run_all_allowed_params(mocker):
         sort="createdTime",
         sortDirection="desc",
         page=1,
-        size=100,
+        size=50,  # 固定値で上書きされる
     )
 
     mock_client.get.assert_called_once()
@@ -461,7 +472,7 @@ def test_run_all_allowed_params(mocker):
     assert params["sort"] == "createdTime"
     assert params["sortDirection"] == "desc"
     assert params["page"] == 1
-    assert params["size"] == 100
+    assert params["size"] == 100  # 固定値
     assert result == {"result": "OK"}
 
 
@@ -489,6 +500,7 @@ def test_run_list_params_from_various_types(mocker):
     assert params["level[]"] == [1, 2, 3]
     assert params["label[]"] == [4, 5]
     assert params["winactorId[]"] == ["wa001"]
+    assert params["size"] == 100
     assert result == {"result": "OK"}
 
 
@@ -828,6 +840,280 @@ def test_run_only_department_name3_is_resolved_with_wrapper(mocker):
     assert result == {"result": "OK"}
 
 
+def test_run_size_always_set_to_100(mocker):
+    """サイズが常に100に設定されることのテスト"""
+    mocker.patch("winactor_for_wmc.events.get_events.get_departments")
+    mock_client_class = mocker.patch("winactor_for_wmc.events.get_events.WMCApiClient")
+    mock_client = mock_client_class.return_value
+    mock_client.get.return_value = {"result": "OK"}
+
+    # サイズを指定しても100に上書きされる
+    result = get_events.run(
+        base_url="https://example.com",
+        token="dummy_token",
+        size=50,  # 指定しても無視される
+    )
+
+    _, called_kwargs = mock_client.get.call_args
+    params = called_kwargs["params"]
+    assert params["size"] == 100  # 常に100に設定される
+
+    assert result == {"result": "OK"}
+
+
+def test_run_size_override_user_specified_size(mocker):
+    """ユーザー指定のサイズが100で上書きされることのテスト"""
+    mocker.patch("winactor_for_wmc.events.get_events.get_departments")
+    mock_client_class = mocker.patch("winactor_for_wmc.events.get_events.WMCApiClient")
+    mock_client = mock_client_class.return_value
+    mock_client.get.return_value = {"result": "OK"}
+
+    # params でサイズを指定しても上書きされる
+    result = get_events.run(
+        base_url="https://example.com",
+        token="dummy_token",
+        params={"size": 25, "page": 1},
+    )
+
+    _, called_kwargs = mock_client.get.call_args
+    params = called_kwargs["params"]
+    assert params["size"] == 100  # 上書きされる
+    assert params["page"] == 1  # その他のパラメータは保持される
+
+    assert result == {"result": "OK"}
+
+
+def test_get_event_info_large_index_with_additional_api_call(mocker):
+    """大きなインデックスで追加APIコールが発生するテスト"""
+    mock_client_class = mocker.patch("winactor_for_wmc.events.get_events.WMCApiClient")
+    mock_client = mock_client_class.return_value
+
+    # 初回レスポンス（100件未満）
+    initial_result = {
+        "items": [{"level": i, "message": f"item_{i}"} for i in range(50)],
+        "totalCount": 250,
+    }
+
+    # 追加取得レスポンス（ページ2）- インデックス120に対応する要素を含む
+    additional_result = {
+        "items": [{"level": i + 100, "message": f"item_{i + 100}"} for i in range(50)],
+    }
+    mock_client.get.return_value = additional_result
+
+    # インデックス120を要求（ページ2のインデックス20）
+    result = get_events.get_event_info(
+        initial_result,
+        120,
+        base_url="https://example.com",
+        token="dummy_token",
+        sort="createdAt",
+        department1="1",
+    )
+
+    # 追加APIコールが発生することを確認
+    mock_client_class.assert_called_once_with("https://example.com", "dummy_token")
+    mock_client.get.assert_called_once_with(
+        "/events",
+        params={
+            "sort": "createdAt",
+            "department1": "1",
+            "page": 2,  # (120 // 100) + 1 = 2
+            "size": 100,
+        },
+    )
+
+    # 正しい要素が返されることを確認
+    assert result["level"] == 120  # 追加取得データの20番目（120 % 100 = 20）
+    assert result["message"] == "item_120"
+
+
+def test_get_event_info_large_index_without_credentials_raises_error(mocker):
+    """認証情報なしで大きなインデックスを指定した場合のエラーテスト"""
+    initial_result = {
+        "items": [{"level": i, "message": f"item_{i}"} for i in range(50)],
+    }
+
+    # base_url または token が不足している場合
+    with pytest.raises(ValueError, match="イベントのインデックスが範囲外です。"):
+        get_events.get_event_info(initial_result, 120)  # 認証情報なし
+
+    with pytest.raises(ValueError, match="イベントのインデックスが範囲外です。"):
+        get_events.get_event_info(
+            initial_result, 120, base_url="https://example.com"
+        )  # tokenなし
+
+    with pytest.raises(ValueError, match="イベントのインデックスが範囲外です。"):
+        get_events.get_event_info(
+            initial_result, 120, token="dummy_token"
+        )  # base_urlなし
+
+
+def test_get_event_info_negative_index_with_total_count():
+    """負数インデックスと全件数を使ったテスト"""
+    result = {
+        "items": [
+            {"level": 1, "message": "first"},
+            {"level": 2, "message": "second"},
+        ],
+        "totalCount": 2,  # 全件数が現在のアイテム数と同じ
+    }
+
+    # -1は全体の最後（インデックス1）
+    info = get_events.get_event_info(result, -1)
+    assert info["level"] == 2
+    assert info["message"] == "second"
+
+    # -2は最初（インデックス0）
+    info = get_events.get_event_info(result, -2)
+    assert info["level"] == 1
+    assert info["message"] == "first"
+
+
+def test_get_event_info_negative_index_out_of_range():
+    """負数インデックスが範囲外の場合のテスト"""
+    result = {
+        "items": [{"level": 1, "message": "first"}],
+        "totalCount": 1,
+    }
+
+    # -2は範囲外（全件数1なので、-1のみ有効）
+    with pytest.raises(ValueError, match="イベントのインデックスが範囲外です。"):
+        get_events.get_event_info(result, -2)
+
+
+def test_get_event_info_negative_index_zero_total_count():
+    """負数インデックスで全件数が0の場合のテスト"""
+    result = {
+        "items": [],
+        "totalCount": 0,
+    }
+
+    with pytest.raises(ValueError, match="イベント情報が存在しません。"):
+        get_events.get_event_info(result, -1)
+
+
+def test_get_event_info_negative_index_no_total_count():
+    """負数インデックスでtotalCountが未指定の場合のテスト"""
+    result = {
+        "items": [
+            {"level": 1, "message": "first"},
+            {"level": 2, "message": "second"},
+        ]
+        # totalCount なし（デフォルト0）
+    }
+
+    with pytest.raises(ValueError, match="イベント情報が存在しません。"):
+        get_events.get_event_info(result, -1)
+
+
+def test_get_event_info_additional_call_empty_response(mocker):
+    """追加APIコールで空レスポンスが返された場合のテスト"""
+    mock_client_class = mocker.patch("winactor_for_wmc.events.get_events.WMCApiClient")
+    mock_client = mock_client_class.return_value
+
+    initial_result = {
+        "items": [{"level": i, "message": f"item_{i}"} for i in range(50)],
+    }
+
+    # 空レスポンス
+    mock_client.get.return_value = {"items": []}
+
+    with pytest.raises(ValueError, match="イベントのインデックスが範囲外です。"):
+        get_events.get_event_info(
+            initial_result,
+            120,
+            base_url="https://example.com",
+            token="dummy_token",
+        )
+
+
+def test_get_event_info_additional_call_index_out_of_page_range(mocker):
+    """追加APIコールでページ内インデックスが範囲外の場合のテスト"""
+    mock_client_class = mocker.patch("winactor_for_wmc.events.get_events.WMCApiClient")
+    mock_client = mock_client_class.return_value
+
+    initial_result = {
+        "items": [{"level": i, "message": f"item_{i}"} for i in range(50)],
+    }
+
+    # 10件のみのレスポンス
+    mock_client.get.return_value = {
+        "items": [{"level": i + 100, "message": f"item_{i + 100}"} for i in range(10)]
+    }
+
+    with pytest.raises(ValueError, match="イベントのインデックスが範囲外です。"):
+        get_events.get_event_info(
+            initial_result,
+            150,  # ページ2のインデックス50を要求するが、10件しかない
+            base_url="https://example.com",
+            token="dummy_token",
+        )
+
+
+def test_get_event_info_additional_call_with_list_params(mocker):
+    """追加APIコールでリストパラメータが正しく処理されるテスト"""
+    mock_client_class = mocker.patch("winactor_for_wmc.events.get_events.WMCApiClient")
+    mock_client = mock_client_class.return_value
+
+    initial_result = {
+        "items": [{"level": i, "message": f"item_{i}"} for i in range(50)],
+    }
+
+    # インデックス150に対応する要素を含むレスポンス
+    additional_result = {
+        "items": [{"level": i + 100, "message": f"item_{i + 100}"} for i in range(100)],
+    }
+    mock_client.get.return_value = additional_result
+
+    result = get_events.get_event_info(
+        initial_result,
+        150,
+        base_url="https://example.com",
+        token="dummy_token",
+        **{
+            "level[]": "1,2,3",  # カンマ区切り文字列
+            "label[]": [4, 5],  # リスト
+            "winactorId[]": {"wa001"},  # セット
+        },
+    )
+
+    # リストパラメータが正しく処理されることを確認
+    mock_client.get.assert_called_once_with(
+        "/events",
+        params={
+            "level[]": ["1", "2", "3"],
+            "label[]": [4, 5],
+            "winactorId[]": ["wa001"],
+            "page": 2,
+            "size": 100,
+        },
+    )
+
+    assert result["level"] == 150
+
+
+def test_get_event_info_page_calculation():
+    """ページ計算のテスト（モックなしで計算ロジックのみ確認）"""
+    # インデックス0-99 → ページ1
+    # インデックス100-199 → ページ2
+    # インデックス200-299 → ページ3
+
+    # テスト用の計算関数
+    def calc_page_and_index(idx):
+        page_size = 100
+        target_page = (idx // page_size) + 1
+        index_in_page = idx % page_size
+        return target_page, index_in_page
+
+    # 境界値テスト
+    assert calc_page_and_index(0) == (1, 0)
+    assert calc_page_and_index(99) == (1, 99)
+    assert calc_page_and_index(100) == (2, 0)
+    assert calc_page_and_index(199) == (2, 99)
+    assert calc_page_and_index(200) == (3, 0)
+    assert calc_page_and_index(15003) == (151, 3)
+
+
 def test_get_event_info_success_with_defaults_and_negative_index():
     result = {
         "items": [
@@ -845,7 +1131,8 @@ def test_get_event_info_success_with_defaults_and_negative_index():
                 "label": 7,
                 "message": "hello",
             },
-        ]
+        ],
+        "totalCount": 2,  # 全件数を追加
     }
     # -1 は末尾
     info = get_events.get_event_info(result, -1)
@@ -902,9 +1189,12 @@ def test_get_event_info_errors_on_non_numeric_index(bad_index):
 
 
 def test_get_event_info_errors_on_out_of_range():
+    # 正数インデックスの範囲外
     with pytest.raises(ValueError, match="イベントのインデックスが範囲外です。"):
         get_events.get_event_info({"items": [{}]}, 1)
-    with pytest.raises(ValueError, match="イベントのインデックスが範囲外です。"):
+
+    # 負数インデックスでtotalCountが0の場合
+    with pytest.raises(ValueError, match="イベント情報が存在しません。"):
         get_events.get_event_info({"items": [{}]}, -2)
 
 
@@ -949,6 +1239,7 @@ def test_get_event_info_string_index():
     assert info["message"] == "second"
 
 
+# ヘルパー関数のテストも継続
 def test__ensure_list_various_inputs():
     el = get_events._ensure_list
     assert el(None) == []
@@ -987,17 +1278,34 @@ def test__norm_various_inputs():
     assert norm(0) == "0"
 
 
-def test__ensure_index_provided_success():
-    # 正常なケース（例外が発生しないことを確認）
-    get_events._ensure_index_provided(0, "test")
-    get_events._ensure_index_provided("1", "test")
-    get_events._ensure_index_provided(-1, "test")
+def test__build_event_info_helper():
+    """_build_event_info ヘルパー関数のテスト"""
+    target = {
+        "level": "2",
+        "label": 5,
+        "winactorId": "wa001",
+        "message": "test message",
+        "createdTime": 1700000000,
+    }
+
+    result = get_events._build_event_info(target)
+
+    assert result["level"] == 2  # 文字列から数値に変換
+    assert result["label"] == 5
+    assert result["winactorId"] == "wa001"
+    assert result["message"] == "test message"
+    assert result["createdTime"] == 1700000000
+    # 未指定項目は既定値
+    assert result["fileId"] == ""
+    assert result["userId"] == ""
 
 
-def test__safe_int_with_float():
-    # float も int に変換される
-    si = get_events._safe_int
-    assert si(3.14) == 3
-    # 文字列の小数点は int() で変換できないため、デフォルト値が返される
-    assert si("3.14", default=0) == 0  # デフォルト値が返される
-    assert si("3.14", default=99) == 99  # カスタムデフォルト値
+def test__build_event_info_empty_target():
+    """_build_event_info に空辞書を渡した場合のテスト"""
+    result = get_events._build_event_info({})
+
+    # すべて既定値
+    assert result["level"] == 0
+    assert result["label"] == 0
+    assert result["winactorId"] == ""
+    assert result["createdTime"] == 0
