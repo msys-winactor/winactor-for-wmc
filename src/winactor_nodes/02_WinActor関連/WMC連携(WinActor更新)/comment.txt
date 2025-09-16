@@ -12,7 +12,7 @@
 　アクセストークンを指定します。
 
 [WinActorID]
-　WinActorIDを指定します。
+　更新を行うWinActorのIDを指定します。
 
 [WinActor名]
 　WinActor名を指定します。
