@@ -1,8 +1,7 @@
-import sys
+﻿import sys
 from datetime import datetime
 
-sys.path.append("C:\\msys-winactor")
-sys.path.append("C:\\Users\\Public\\msys-winactor\\libs")
+sys.path.append(r"C:\Users\Public\msys-dx-adapters\libs\winactor_for_wmc")
 
 from winactor_for_wmc.schedules import put_schedules
 
