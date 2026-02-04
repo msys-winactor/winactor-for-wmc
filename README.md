@@ -48,7 +48,7 @@ poetry run pytest
 
 ## 💻 開発環境
 
-- Python 3.12.4（固定バージョン）
+- Python 3.12.8（32bit 固定バージョン）
 - Poetry を使用した依存管理
 - VSCode + flake8 / black / isort / pytest
 

@@ -11,11 +11,10 @@ readme = "README.md"
 [tool.poetry.scripts]
 copy-to-public = "tools.package_copy_to_public:main"
 release = "tools.release:main"
+vendor = "tools.vendor_packages:vendor_dependencies"
 
 [tool.poetry.dependencies]
-python = "3.12.4"
-requests = ">=2.32.3,<3.0.0"
-cryptography = "^45.0.4"
+python = ">=3.12.8,<3.13"
 
 [tool.poetry.group.dev.dependencies]
 black = "^25.1.0"
@@ -26,6 +25,9 @@ pytest-cov = "^6.1.1"
 pytest-mock = "^3.14.0"
 pre-commit = "^4.2.0"
 flake8-pyproject = "^1.2.3"
+requests = ">=2.32.3,<3.0.0"
+pycryptodome = "^3.21.0"
+pyarmor = "^9.0.0"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
