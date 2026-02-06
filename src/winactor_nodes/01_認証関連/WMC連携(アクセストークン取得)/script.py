@@ -1,8 +1,7 @@
-﻿import sys
-import os
+import sys
 
-# モジュール検索パスを追加
-sys.path.append(r"C:\Users\Public\msys-dx-adapters\libs\winactor_for_wmc")
+sys.path.append(r"C:\Users\Public\msys-winactor-adapters\libs\runtime")
+sys.path.append(r"C:\Users\Public\msys-winactor-adapters\libs\winactor_for_wmc")
 
 from winactor_for_wmc.auth import get_token
 

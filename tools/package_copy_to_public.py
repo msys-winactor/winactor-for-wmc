@@ -16,7 +16,7 @@ if sys.platform == "win32":
 SRC_DIR = Path(__file__).resolve().parent.parent / "src"
 
 # コピー先ディレクトリ
-DEST_DIR = Path(r"C:\Users\Public\msys-dx-adapters\libs\winactor_for_wmc")
+DEST_DIR = Path(r"C:\Users\Public\msys-winactor-adapters\libs\winactor_for_wmc")
 
 # 除外するディレクトリ名
 EXCLUDE_DIRS = {"winactor_nodes"}

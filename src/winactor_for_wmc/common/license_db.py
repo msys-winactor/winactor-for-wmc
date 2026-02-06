@@ -34,7 +34,7 @@ flm+PCNA2mYqtGoU5R08jVOlhPZ/xT/3wTJwMSmEsMQBhFgGzOJrIDr56sNTiQna
 
 # デフォルトのライセンスファイルパス（Windows）
 DEFAULT_JSON_PATH = os.path.expandvars(
-    r"%PUBLIC%\msys-dx-adapters\licenses\licenses.json"
+    r"%PUBLIC%\msys-winactor-adapters\licenses\licenses.json"
 )
 
 
