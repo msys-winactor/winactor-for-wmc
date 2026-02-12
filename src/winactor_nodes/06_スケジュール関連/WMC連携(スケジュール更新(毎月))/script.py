@@ -93,6 +93,19 @@ if __name__ == "__main__":
     if TASKTIME:
         schedule_dict["taskTime"] = TASKTIME.strip()
 
+    schedule_dict["archive"] = archive_bool
+    schedule_dict["log"] = log_bool
+    schedule_dict["onError"] = onerror_val
+    schedule_dict["sendMail"] = sendmail_val
+
+    # RETRYNUM が空/空白のみでなければ、int に変換してセット
+    if RETRYNUM is not None and str(RETRYNUM).strip():
+        schedule_dict["retryNum"] = int(str(RETRYNUM).strip())
+
+    # RETRYINTERVAL が空/空白のみでなければ、int に変換してセット
+    if RETRYINTERVAL is not None and str(RETRYINTERVAL).strip():
+        schedule_dict["retryInterval"] = int(str(RETRYINTERVAL).strip())
+
     if DESCRIPTION:
         schedule_dict["description"] = DESCRIPTION.strip()
     schedule_dict["status"] = status_val
