@@ -1,7 +1,7 @@
 import sys
 
-sys.path.append("C:\\msys-winactor")
-sys.path.append("C:\\Users\\Public\\msys-winactor\\libs")
+sys.path.append(r"C:\Users\Public\msys-winactor-adapters\libs\runtime")
+sys.path.append(r"C:\Users\Public\msys-winactor-adapters\libs\winactor_for_wmc")
 
 from winactor_for_wmc.schedules import put_schedules
 
@@ -94,6 +94,19 @@ if __name__ == "__main__":
             pass
     if TASKTIME:
         schedule_dict["taskTime"] = TASKTIME.strip()
+
+    schedule_dict["archive"] = archive_bool
+    schedule_dict["log"] = log_bool
+    schedule_dict["onError"] = onerror_val
+    schedule_dict["sendMail"] = sendmail_val
+
+    # RETRYNUM が空/空白のみでなければ、int に変換してセット
+    if RETRYNUM is not None and str(RETRYNUM).strip():
+        schedule_dict["retryNum"] = int(str(RETRYNUM).strip())
+
+    # RETRYINTERVAL が空/空白のみでなければ、int に変換してセット
+    if RETRYINTERVAL is not None and str(RETRYINTERVAL).strip():
+        schedule_dict["retryInterval"] = int(str(RETRYINTERVAL).strip())
 
     if DESCRIPTION:
         schedule_dict["description"] = DESCRIPTION.strip()

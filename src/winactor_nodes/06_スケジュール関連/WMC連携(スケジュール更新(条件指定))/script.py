@@ -1,7 +1,7 @@
 import sys
 
-sys.path.append("C:\\msys-winactor")
-sys.path.append("C:\\Users\\Public\\msys-winactor\\libs")
+sys.path.append(r"C:\Users\Public\msys-winactor-adapters\libs\runtime")
+sys.path.append(r"C:\Users\Public\msys-winactor-adapters\libs\winactor_for_wmc")
 
 from winactor_for_wmc.schedules import put_schedules
 
@@ -91,12 +91,20 @@ if __name__ == "__main__":
 
     if CRON:
         schedule_dict["cron"] = CRON.strip()
+    
     schedule_dict["archive"] = archive_bool
     schedule_dict["log"] = log_bool
     schedule_dict["onError"] = onerror_val
     schedule_dict["sendMail"] = sendmail_val
-    schedule_dict["retryNum"] = int(RETRYNUM) if RETRYNUM and str(RETRYNUM).strip() else 0
-    schedule_dict["retryInterval"] = int(RETRYINTERVAL) if RETRYINTERVAL and str(RETRYINTERVAL).strip() else 0
+
+    # RETRYNUM が空/空白のみでなければ、int に変換してセット
+    if RETRYNUM is not None and str(RETRYNUM).strip():
+        schedule_dict["retryNum"] = int(str(RETRYNUM).strip())
+
+    # RETRYINTERVAL が空/空白のみでなければ、int に変換してセット
+    if RETRYINTERVAL is not None and str(RETRYINTERVAL).strip():
+        schedule_dict["retryInterval"] = int(str(RETRYINTERVAL).strip())
+
     if CRONSTARTYEARMONTH:
         schedule_dict["cronStartYearMonth"] = CRONSTARTYEARMONTH.strip()
     if CRONENDYEARMONTH:

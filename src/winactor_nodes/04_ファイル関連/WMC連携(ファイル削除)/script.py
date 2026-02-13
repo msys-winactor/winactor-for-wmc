@@ -1,7 +1,7 @@
 import sys
 
-sys.path.append("C:\\msys-winactor")
-sys.path.append("C:\\Users\\Public\\msys-winactor\\libs")
+sys.path.append(r"C:\Users\Public\msys-winactor-adapters\libs\runtime")
+sys.path.append(r"C:\Users\Public\msys-winactor-adapters\libs\winactor_for_wmc")
 
 from winactor_for_wmc.files import delete_files
 
