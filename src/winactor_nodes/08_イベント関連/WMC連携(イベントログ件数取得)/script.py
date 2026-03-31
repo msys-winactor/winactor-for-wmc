@@ -1,8 +1,6 @@
 import sys
 
-# ライブラリ検索パス（環境に合わせて変更）
-sys.path.append(r"C:\Users\Public\msys-winactor-adapters\libs\runtime")
-sys.path.append(r"C:\Users\Public\msys-winactor-adapters\libs\winactor_for_wmc")
+sys.path.append(r"C:\Users\public\msys-winactor-adapters\libs")
 
 from winactor_for_wmc.events import get_events_number
 
