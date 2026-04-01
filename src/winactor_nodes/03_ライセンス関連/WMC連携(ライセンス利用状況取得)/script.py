@@ -42,7 +42,7 @@ def main(**kwargs):
 if __name__ == "__main__":
     BASE_URL = !*WMC URL!      # type: ignore
     TOKEN = !*アクセストークン!  # type: ignore
-    INDEX = !インデックス!      # 0始まり。負数も可。 # type: ignore
+    INDEX = !*インデックス!      # 0始まり。負数も可。 # type: ignore
 
     # 必須パラメータチェック
     missing_params = []
@@ -50,6 +50,8 @@ if __name__ == "__main__":
         missing_params.append("WMC URL")
     if not TOKEN or not str(TOKEN).strip():
         missing_params.append("アクセストークン")
+    if not INDEX or not str(INDEX).strip():
+        missing_params.append("インデックス")
     if missing_params:
         raise winactor.WinActorError(1, f"必須パラメータが入力されていません: {', '.join(missing_params)}")  # type: ignore
 
