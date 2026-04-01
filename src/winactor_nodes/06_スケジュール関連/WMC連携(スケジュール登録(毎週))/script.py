@@ -13,7 +13,7 @@ DEPARTMENT2 = !所属(子)!  # type: ignore
 DEPARTMENT3 = !所属(孫)!  # type: ignore
 SCENARIO_ID = !*シナリオID!  # type: ignore
 WINACTORS = !実行WinActor(ID)!  # type: ignore
-DAYOFWEEK = !*曜日|月曜日,火曜日,水曜日,木曜日,金曜日,土曜日,日曜日!  # type: ignore
+DAYOFWEEK = !曜日|月曜日,火曜日,水曜日,木曜日,金曜日,土曜日,日曜日!  # type: ignore
 TASKTIME = !*実行時間(hh:mm:ss)!  # type: ignore
 ARCHIVE = !アーカイブ|シナリオ実行後に作業ディレクトリのアーカイブを作成しない,シナリオ実行後に作業ディレクトリのアーカイブを作成する!  # type: ignore
 LOG = !ログ|シナリオ実行時のログを作業ディレクトリに出力しない,シナリオ実行時のログを作業ディレクトリに出力する!  # type: ignore
@@ -38,8 +38,6 @@ if __name__ == "__main__":
         missing_params.append("スケジュール名")
     if not SCENARIO_ID or not str(SCENARIO_ID).strip():
         missing_params.append("シナリオID")
-    if not DAYOFWEEK or not str(DAYOFWEEK).strip():
-        missing_params.append("曜日")
     if not TASKTIME or not str(TASKTIME).strip():
         missing_params.append("実行時間(hh:mm:ss)")
     if missing_params:
