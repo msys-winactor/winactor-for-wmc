@@ -35,6 +35,19 @@ def main(**kwargs):
 
 if __name__ == "__main__":
 
+    # 必須パラメータチェック
+    missing_params = []
+    if not BASE_URL or not str(BASE_URL).strip():
+        missing_params.append("WMC URL")
+    if not TOKEN or not str(TOKEN).strip():
+        missing_params.append("アクセストークン")
+    if not USER_NAME or not str(USER_NAME).strip():
+        missing_params.append("ユーザ名")
+    if not ROLE or not str(ROLE).strip():
+        missing_params.append("ロール")
+    if missing_params:
+        raise winactor.WinActorError(1, f"必須パラメータが入力されていません: {', '.join(missing_params)}")  # type: ignore
+
     # "無効"/"有効" -> "false"/"true" に再代入
     if APPROVAL == "無効":
         APPROVAL = "false"

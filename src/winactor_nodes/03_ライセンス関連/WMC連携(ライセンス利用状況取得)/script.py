@@ -44,6 +44,15 @@ if __name__ == "__main__":
     TOKEN = !アクセストークン!  # type: ignore
     INDEX = !インデックス!      # 0始まり。負数も可。 # type: ignore
 
+    # 必須パラメータチェック
+    missing_params = []
+    if not BASE_URL or not str(BASE_URL).strip():
+        missing_params.append("WMC URL")
+    if not TOKEN or not str(TOKEN).strip():
+        missing_params.append("アクセストークン")
+    if missing_params:
+        raise winactor.WinActorError(1, f"必須パラメータが入力されていません: {', '.join(missing_params)}")  # type: ignore
+
     # 必要に応じて指定（未入力は無視）
     WINACTOR_NAME_TYPE = !WinActor名検索条件|完全一致,部分一致!              # type: ignore
     WINACTOR_NAME = !WinActor名!                                            # type: ignore

@@ -27,6 +27,21 @@ def main(**kwargs):
     return put_scenarios.run(**kwargs)
 
 if __name__ == "__main__":
+    # 必須パラメータチェック
+    missing_params = []
+    if not BASE_URL or not str(BASE_URL).strip():
+        missing_params.append("WMC URL")
+    if not TOKEN or not str(TOKEN).strip():
+        missing_params.append("アクセストークン")
+    if not SCENARIO_ID or not str(SCENARIO_ID).strip():
+        missing_params.append("シナリオID")
+    if not NAME or not str(NAME).strip():
+        missing_params.append("名前")
+    if not FILE_ID or not str(FILE_ID).strip():
+        missing_params.append("ファイルID")
+    if missing_params:
+        raise winactor.WinActorError(1, f"必須パラメータが入力されていません: {', '.join(missing_params)}")  # type: ignore
+
     # SIMPLE_MODE 再代入（文字列→真偽値文字列）
     if SIMPLE_MODE == "無効":
         SIMPLE_MODE = "false"

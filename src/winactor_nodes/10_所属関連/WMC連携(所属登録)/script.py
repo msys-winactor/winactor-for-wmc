@@ -19,6 +19,17 @@ def main(**kwargs):
 
 
 if __name__ == "__main__":
+    # 必須パラメータチェック
+    missing_params = []
+    if not BASE_URL or not str(BASE_URL).strip():
+        missing_params.append("WMC URL")
+    if not TOKEN or not str(TOKEN).strip():
+        missing_params.append("アクセストークン")
+    if not NAME or not str(NAME).strip():
+        missing_params.append("所属名")
+    if missing_params:
+        raise winactor.WinActorError(1, f"必須パラメータが入力されていません: {', '.join(missing_params)}")  # type: ignore
+
     department_data = {}
 
     if NAME:

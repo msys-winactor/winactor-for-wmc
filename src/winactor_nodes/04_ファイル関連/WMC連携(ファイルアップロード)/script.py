@@ -18,6 +18,17 @@ def main(**kwargs):
     return post_files.run(**kwargs)
 
 if __name__ == "__main__":
+    # 必須パラメータチェック
+    missing_params = []
+    if not BASE_URL or not str(BASE_URL).strip():
+        missing_params.append("WMC URL")
+    if not TOKEN or not str(TOKEN).strip():
+        missing_params.append("アクセストークン")
+    if not FILE_PATH or not str(FILE_PATH).strip():
+        missing_params.append("ファイル名")
+    if missing_params:
+        raise winactor.WinActorError(1, f"必須パラメータが入力されていません: {', '.join(missing_params)}")  # type: ignore
+
     # パラメータ整形
     file_data = {}
 

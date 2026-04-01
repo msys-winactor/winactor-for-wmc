@@ -29,6 +29,21 @@ def main(**kwargs):
     return put_schedules.run(**kwargs)
 
 if __name__ == "__main__":
+    # 必須パラメータチェック
+    missing_params = []
+    if not BASE_URL or not str(BASE_URL).strip():
+        missing_params.append("WMC URL")
+    if not TOKEN or not str(TOKEN).strip():
+        missing_params.append("アクセストークン")
+    if not SCHEDULE_ID or not str(SCHEDULE_ID).strip():
+        missing_params.append("スケジュールID")
+    if not NAME or not str(NAME).strip():
+        missing_params.append("スケジュール名")
+    if not SCENARIO_ID or not str(SCENARIO_ID).strip():
+        missing_params.append("シナリオID")
+    if missing_params:
+        raise winactor.WinActorError(1, f"必須パラメータが入力されていません: {', '.join(missing_params)}")  # type: ignore
+
     # 変換ロジック
     winactor_list = [w.strip() for w in WINACTOR.split(",") if w.strip()] if WINACTOR else []
     # 単一IDに変換
