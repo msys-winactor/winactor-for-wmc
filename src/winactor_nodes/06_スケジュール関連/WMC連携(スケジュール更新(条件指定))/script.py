@@ -16,7 +16,7 @@ SCENARIO_ID = !*シナリオID!  # type: ignore
 WINACTOR = !実行WinActor(ID)!  # type: ignore
 CRONSTARTYEARMONTH = !開始年月(yyyy/MM)!  # type: ignore
 CRONENDYEARMONTH = !終了年月(yyyy/MM)!  # type: ignore
-CRON = !CRON!  # type: ignore
+CRON = !*CRON!  # type: ignore
 ARCHIVE = !アーカイブ|シナリオ実行後に作業ディレクトリのアーカイブを作成しない,シナリオ実行後に作業ディレクトリのアーカイブを作成する!  # type: ignore
 LOG = !ログ|シナリオ実行時のログを作業ディレクトリに出力しない,シナリオ実行時のログを作業ディレクトリに出力する!  # type: ignore
 ONERROR = !異常発生時|シナリオ実行時に異常が発生した場合、クリーンし、次のシナリオの実行の準備をする,シナリオ実行時に異常が発生した場合、そこで停止させる!  # type: ignore
@@ -42,6 +42,8 @@ if __name__ == "__main__":
         missing_params.append("スケジュール名")
     if not SCENARIO_ID or not str(SCENARIO_ID).strip():
         missing_params.append("シナリオID")
+    if not CRON or not str(CRON).strip():
+        missing_params.append("CRON")
     if missing_params:
         raise winactor.WinActorError(1, f"必須パラメータが入力されていません: {', '.join(missing_params)}")  # type: ignore
 

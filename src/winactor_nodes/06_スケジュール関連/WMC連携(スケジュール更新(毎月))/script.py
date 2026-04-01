@@ -14,8 +14,8 @@ DEPARTMENT2 = !所属(子)!  # type: ignore
 DEPARTMENT3 = !所属(孫)!  # type: ignore
 SCENARIO_ID = !*シナリオID!  # type: ignore
 WINACTOR = !実行WinActor(ID)!  # type: ignore
-DAYOFMONTH = !毎月何日(1～31)!  # type: ignore
-TASKTIME = !実行時間(hh:mm:ss)!  # type: ignore
+DAYOFMONTH = !*毎月何日(1～31)!  # type: ignore
+TASKTIME = !*実行時間(hh:mm:ss)!  # type: ignore
 ARCHIVE = !アーカイブ|シナリオ実行後に作業ディレクトリのアーカイブを作成しない,シナリオ実行後に作業ディレクトリのアーカイブを作成する!  # type: ignore
 LOG = !ログ|シナリオ実行時のログを作業ディレクトリに出力しない,シナリオ実行時のログを作業ディレクトリに出力する!  # type: ignore
 ONERROR = !異常発生時|シナリオ実行時に異常が発生した場合、クリーンし、次のシナリオの実行の準備をする,シナリオ実行時に異常が発生した場合、そこで停止させる!  # type: ignore
@@ -41,6 +41,10 @@ if __name__ == "__main__":
         missing_params.append("スケジュール名")
     if not SCENARIO_ID or not str(SCENARIO_ID).strip():
         missing_params.append("シナリオID")
+    if not DAYOFMONTH or not str(DAYOFMONTH).strip():
+        missing_params.append("毎月何日(1～31)")
+    if not TASKTIME or not str(TASKTIME).strip():
+        missing_params.append("実行時間(hh:mm:ss)")
     if missing_params:
         raise winactor.WinActorError(1, f"必須パラメータが入力されていません: {', '.join(missing_params)}")  # type: ignore
 
