@@ -11,9 +11,9 @@ def main(**kwargs):
 
 if __name__ == "__main__":
     # WinActorから入力値を取得
-    base_url = !WMC URL!     # pyright: ignore
-    user_id = !ユーザ名!     # pyright: ignore
-    password = !パスワード!    # pyright: ignore
+    base_url = !*WMC URL!     # pyright: ignore
+    user_id = !*ユーザ名!     # pyright: ignore
+    password = !*パスワード!    # pyright: ignore
 
     # 必須パラメータチェック
     missing_params = []

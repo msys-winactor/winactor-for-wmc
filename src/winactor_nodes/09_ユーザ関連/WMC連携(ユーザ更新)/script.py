@@ -6,11 +6,11 @@ sys.path.append(r"C:\Users\public\msys-winactor-adapters\libs")
 from winactor_for_wmc.users import put_users
 
 # 各種パラメータ（ユーザIDではなくユーザ名を受け取る）
-BASE_URL = !WMC URL!  # type: ignore
-TOKEN = !アクセストークン!  # type: ignore
-USER_NAME = !ユーザ名!  # type: ignore
+BASE_URL = !*WMC URL!  # type: ignore
+TOKEN = !*アクセストークン!  # type: ignore
+USER_NAME = !*ユーザ名!  # type: ignore
 PASSWORD = !パスワード!  # type: ignore
-ROLE = !ロール!  # type: ignore
+ROLE = !*ロール!  # type: ignore
 DEPARTMENT1 = !所属(親)!  # type: ignore
 DEPARTMENT2 = !所属(子)!  # type: ignore
 DEPARTMENT3 = !所属(孫)!  # type: ignore

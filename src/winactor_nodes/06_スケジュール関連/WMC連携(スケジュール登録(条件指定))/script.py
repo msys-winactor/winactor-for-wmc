@@ -5,13 +5,13 @@ sys.path.append(r"C:\Users\public\msys-winactor-adapters\libs")
 from winactor_for_wmc.schedules import post_schedules
 
 # 各種パラメータ
-BASE_URL = !WMC URL!  # type: ignore
-TOKEN = !アクセストークン!  # type: ignore
-NAME = !スケジュール名!  # type: ignore
+BASE_URL = !*WMC URL!  # type: ignore
+TOKEN = !*アクセストークン!  # type: ignore
+NAME = !*スケジュール名!  # type: ignore
 DEPARTMENT1 = !所属(親)!  # type: ignore
 DEPARTMENT2 = !所属(子)!  # type: ignore
 DEPARTMENT3 = !所属(孫)!  # type: ignore
-SCENARIO_ID = !シナリオID!  # type: ignore
+SCENARIO_ID = !*シナリオID!  # type: ignore
 WINACTORS = !実行WinActor(ID)!  # type: ignore
 CRONSTARTYEARMONTH = !開始年月(yyyy/MM)!  # type: ignore
 CRONENDYEARMONTH = !終了年月(yyyy/MM)!  # type: ignore

@@ -27,8 +27,8 @@ def main(**kwargs):
 
 
 if __name__ == "__main__":
-    BASE_URL = !WMC URL!        # type: ignore
-    TOKEN = !アクセストークン!    # type: ignore
+    BASE_URL = !*WMC URL!        # type: ignore
+    TOKEN = !*アクセストークン!    # type: ignore
     INDEX = !インデックス!        # 0始まり。負数も可。 # type: ignore
 
     # 必須パラメータチェック

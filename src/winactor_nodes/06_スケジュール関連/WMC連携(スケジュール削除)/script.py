@@ -9,9 +9,9 @@ def main(**kwargs):
     return delete_schedules.run(**kwargs)
 
 if __name__ == "__main__":
-    BASE_URL = !WMC URL!  # type: ignore
-    TOKEN = !アクセストークン!  # type: ignore
-    SCHEDULE_ID = !スケジュールID!  # type: ignore
+    BASE_URL = !*WMC URL!  # type: ignore
+    TOKEN = !*アクセストークン!  # type: ignore
+    SCHEDULE_ID = !*スケジュールID!  # type: ignore
 
     # 必須パラメータチェック
     missing_params = []

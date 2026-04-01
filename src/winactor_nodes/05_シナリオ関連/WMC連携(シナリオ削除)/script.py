@@ -9,9 +9,9 @@ def main(**kwargs):
     return delete_scenarios.run(**kwargs)
 
 if __name__ == "__main__":
-    BASE_URL = !WMC URL!  # type: ignore
-    TOKEN = !アクセストークン!  # type: ignore
-    SCENARIO_ID = !シナリオID!  # type: ignore
+    BASE_URL = !*WMC URL!  # type: ignore
+    TOKEN = !*アクセストークン!  # type: ignore
+    SCENARIO_ID = !*シナリオID!  # type: ignore
 
     # 必須パラメータチェック
     missing_params = []

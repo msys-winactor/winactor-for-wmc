@@ -5,10 +5,10 @@ sys.path.append(r"C:\Users\public\msys-winactor-adapters\libs")
 from winactor_for_wmc.scenarios import post_scenarios
 
 # 各種パラメータ
-BASE_URL = !WMC URL!  # type: ignore
-TOKEN = !アクセストークン!  # type: ignore
-FILE_ID = !ファイルID!  # type: ignore
-NAME = !名前!  # type: ignore
+BASE_URL = !*WMC URL!  # type: ignore
+TOKEN = !*アクセストークン!  # type: ignore
+FILE_ID = !*ファイルID!  # type: ignore
+NAME = !*名前!  # type: ignore
 PASSWORD = !パスワード!  # type: ignore
 DEPARTMENT1 = !所属(親)!  # type: ignore
 DEPARTMENT2 = !所属(子)!  # type: ignore

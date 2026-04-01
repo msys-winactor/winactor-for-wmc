@@ -10,9 +10,9 @@ def main(**kwargs):
 
 
 if __name__ == "__main__":
-    BASE_URL = !WMC URL!  # type: ignore
-    TOKEN = !アクセストークン!  # type: ignore
-    TASK_ID = !タスクID!  # type: ignore
+    BASE_URL = !*WMC URL!  # type: ignore
+    TOKEN = !*アクセストークン!  # type: ignore
+    TASK_ID = !*タスクID!  # type: ignore
 
     # 必須パラメータチェック
     missing_params = []

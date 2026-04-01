@@ -9,9 +9,9 @@ def main(**kwargs):
     return delete_winactors.run(**kwargs)
 
 if __name__ == "__main__":
-    BASE_URL = !WMC URL!  # type: ignore
-    TOKEN = !アクセストークン!  # type: ignore
-    WINACTOR_ID = !WinActorID!  # type: ignore
+    BASE_URL = !*WMC URL!  # type: ignore
+    TOKEN = !*アクセストークン!  # type: ignore
+    WINACTOR_ID = !*WinActorID!  # type: ignore
 
     # 必須パラメータチェック
     missing_params = []

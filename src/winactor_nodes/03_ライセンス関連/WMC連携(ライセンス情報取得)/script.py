@@ -38,8 +38,8 @@ def main(**kwargs):
 
 
 if __name__ == "__main__":
-    BASE_URL = !WMC URL!        # type: ignore
-    TOKEN = !アクセストークン!    # type: ignore
+    BASE_URL = !*WMC URL!        # type: ignore
+    TOKEN = !*アクセストークン!    # type: ignore
     FEATURE_INDEX = !ライセンス名|フル機能版,実行版,管理実行版!   # type: ignore
 
     # 必須パラメータチェック

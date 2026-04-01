@@ -6,14 +6,14 @@ sys.path.append(r"C:\Users\public\msys-winactor-adapters\libs")
 from winactor_for_wmc.schedules import put_schedules
 
 # 各種パラメータ
-BASE_URL = !WMC URL!  # type: ignore
-TOKEN = !アクセストークン!  # type: ignore
-SCHEDULE_ID = !スケジュールID!  # type: ignore
-NAME = !スケジュール名!  # type: ignore
+BASE_URL = !*WMC URL!  # type: ignore
+TOKEN = !*アクセストークン!  # type: ignore
+SCHEDULE_ID = !*スケジュールID!  # type: ignore
+NAME = !*スケジュール名!  # type: ignore
 DEPARTMENT1 = !所属(親)!  # type: ignore
 DEPARTMENT2 = !所属(子)!  # type: ignore
 DEPARTMENT3 = !所属(孫)!  # type: ignore
-SCENARIO_ID = !シナリオID!  # type: ignore
+SCENARIO_ID = !*シナリオID!  # type: ignore
 WINACTOR = !実行WinActor(ID)!  # type: ignore
 ARCHIVE = !アーカイブ|シナリオ実行後に作業ディレクトリのアーカイブを作成しない,シナリオ実行後に作業ディレクトリのアーカイブを作成する!  # type: ignore
 LOG = !ログ|シナリオ実行時のログを作業ディレクトリに出力しない,シナリオ実行時のログを作業ディレクトリに出力する!  # type: ignore

@@ -10,9 +10,9 @@ def main(**kwargs):
     return get_users_approvals_csv.run(**kwargs)
 
 if __name__ == "__main__":
-    BASE_URL = !WMC URL!  # type: ignore
-    TOKEN = !アクセストークン!  # type: ignore
-    FILE_PATH = !CSVファイル名!  # type: ignore
+    BASE_URL = !*WMC URL!  # type: ignore
+    TOKEN = !*アクセストークン!  # type: ignore
+    FILE_PATH = !*CSVファイル名!  # type: ignore
     ENCODING = !エンコーディング|MS932,UTF-8!  # type: ignore
 
     # 必須パラメータチェック
