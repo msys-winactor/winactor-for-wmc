@@ -6,9 +6,9 @@ sys.path.append(r"C:\Users\public\msys-winactor-adapters\libs")
 from winactor_for_wmc.users import post_users_csv
 
 # 各種パラメータ
-BASE_URL = !WMC URL!  # type: ignore
-TOKEN = !アクセストークン!  # type: ignore
-CSV_FILE_PATH = !CSVファイル名!  # type: ignore
+BASE_URL = !*WMC URL!  # type: ignore
+TOKEN = !*アクセストークン!  # type: ignore
+CSV_FILE_PATH = !*CSVファイル名!  # type: ignore
 ENCODING = !エンコーディング|MS932,UTF-8!  # type: ignore
 EXECUTE_TYPE = !処理区分|新規登録,更新,削除!  # type: ignore
 
@@ -16,6 +16,17 @@ def main(**kwargs):
     return post_users_csv.run(**kwargs)
 
 if __name__ == "__main__":
+    # 必須パラメータチェック
+    missing_params = []
+    if not BASE_URL or not str(BASE_URL).strip():
+        missing_params.append("WMC URL")
+    if not TOKEN or not str(TOKEN).strip():
+        missing_params.append("アクセストークン")
+    if not CSV_FILE_PATH or not str(CSV_FILE_PATH).strip():
+        missing_params.append("CSVファイル名")
+    if missing_params:
+        raise winactor.WinActorError(1, f"必須パラメータが入力されていません: {', '.join(missing_params)}")  # type: ignore
+
     # パラメータ整形
     import_data = {}
     
