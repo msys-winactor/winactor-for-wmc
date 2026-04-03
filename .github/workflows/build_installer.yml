@@ -7,6 +7,14 @@ on:
         description: "Python バージョン"
         required: false
         default: "3.12.8"
+      architecture:
+        description: "アーキテクチャ (x86 / x64)"
+        required: false
+        default: "x86"
+        type: choice
+        options:
+          - x86
+          - x64
 
 permissions:
   contents: write
@@ -29,11 +37,11 @@ jobs:
           echo "Version: $VERSION"
 
       # ── Python & PyArmor セットアップ ──────────────────────
-      - name: Set up Python (x86)
+      - name: Set up Python (${{ inputs.architecture }})
         uses: actions/setup-python@v5
         with:
           python-version: "${{ inputs.python-version }}"
-          architecture: x86
+          architecture: ${{ inputs.architecture }}
 
       - name: Install PyArmor
         run: python -m pip install --upgrade --no-cache-dir pyarmor
@@ -55,7 +63,7 @@ jobs:
         shell: bash
         run: |
           pyarmor gen -r \
-            --platform windows.x86 \
+            --platform ${{ inputs.architecture == 'x86' && 'windows.x86' || 'windows.x86_64' }} \
             -O staging \
             src/winactor_for_wmc
           echo "=== Staging directory contents ==="
@@ -74,7 +82,7 @@ jobs:
           # 32bit Windows 用に pycryptodome をダウンロード
           python -m pip install \
             --target "$TEMP_DIR" \
-            --platform win32 \
+            --platform ${{ inputs.architecture == 'x86' && 'win32' || 'win_amd64' }} \
             --python-version 3.12 \
             --only-binary=:all: \
             --no-deps \
