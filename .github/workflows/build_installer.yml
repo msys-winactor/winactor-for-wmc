@@ -3,10 +3,18 @@ name: Build InnoSetup Installer
 on:
   workflow_dispatch:
     inputs:
-      version:
-        description: "リリースバージョン (例: 1.0.4)"
-        required: true
-        default: "1.0.4"
+      python-version:
+        description: "Python バージョン"
+        required: false
+        default: "3.12.8"
+      architecture:
+        description: "アーキテクチャ (x86 / x64)"
+        required: false
+        default: "x86"
+        type: choice
+        options:
+          - x86
+          - x64
 
 permissions:
   contents: write
@@ -19,12 +27,21 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
+      # ── バージョン取得 ─────────────────────────────────────
+      - name: Extract version from pyproject.toml
+        id: version
+        shell: bash
+        run: |
+          VERSION=$(grep -m1 '^version' pyproject.toml | sed 's/.*"\(.*\)"/\1/')
+          echo "value=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Version: $VERSION"
+
       # ── Python & PyArmor セットアップ ──────────────────────
-      - name: Set up Python 3.12.8 (x86)
+      - name: Set up Python (${{ inputs.architecture }})
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12.8"
-          architecture: x86
+          python-version: "${{ inputs.python-version }}"
+          architecture: ${{ inputs.architecture }}
 
       - name: Install PyArmor
         run: python -m pip install --upgrade --no-cache-dir pyarmor
@@ -46,7 +63,7 @@ jobs:
         shell: bash
         run: |
           pyarmor gen -r \
-            --platform windows.x86 \
+            --platform ${{ inputs.architecture == 'x86' && 'windows.x86' || 'windows.x86_64' }} \
             -O staging \
             src/winactor_for_wmc
           echo "=== Staging directory contents ==="
@@ -65,7 +82,7 @@ jobs:
           # 32bit Windows 用に pycryptodome をダウンロード
           python -m pip install \
             --target "$TEMP_DIR" \
-            --platform win32 \
+            --platform ${{ inputs.architecture == 'x86' && 'win32' || 'win_amd64' }} \
             --python-version 3.12 \
             --only-binary=:all: \
             --no-deps \
@@ -117,7 +134,7 @@ jobs:
       - name: Build installer with InnoSetup
         shell: cmd
         run: |
-          iscc /DMyAppVersion=${{ inputs.version }} /DSourceDir=%GITHUB_WORKSPACE%\staging installer\installer.iss
+          iscc /DMyAppVersion=${{ steps.version.outputs.value }} /DSourceDir=%GITHUB_WORKSPACE%\staging installer\installer.iss
           echo === Installer output ===
           dir installer\Output\
 
@@ -125,13 +142,13 @@ jobs:
       - name: Upload installer artifact
         uses: actions/upload-artifact@v4
         with:
-          name: winactor-for-wmc-setup-v${{ inputs.version }}
-          path: installer/Output/winactor-for-wmc-setup-v${{ inputs.version }}.exe
+          name: winactor-for-wmc-setup-v${{ steps.version.outputs.value }}
+          path: installer/Output/winactor-for-wmc-setup-v${{ steps.version.outputs.value }}.exe
 
       # ── GitHub Release に公開 ──────────────────────────────
       - name: Publish release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ inputs.version }}-installer
-          name: "WinActor for WMC v${{ inputs.version }} Installer"
-          files: installer/Output/winactor-for-wmc-setup-v${{ inputs.version }}.exe
+          tag_name: v${{ steps.version.outputs.value }}-installer
+          name: "WinActor for WMC v${{ steps.version.outputs.value }} Installer"
+          files: installer/Output/winactor-for-wmc-setup-v${{ steps.version.outputs.value }}.exe
