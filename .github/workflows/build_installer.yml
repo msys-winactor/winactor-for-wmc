@@ -119,14 +119,14 @@ jobs:
         run: |
           iscc /DMyAppVersion=${{ inputs.version }} /DSourceDir=%GITHUB_WORKSPACE%\staging installer\installer.iss
           echo === Installer output ===
-          dir Output\
+          dir installer\Output\
 
       # ── アーティファクトのアップロード ─────────────────────
       - name: Upload installer artifact
         uses: actions/upload-artifact@v4
         with:
           name: winactor-for-wmc-setup-v${{ inputs.version }}
-          path: Output/winactor-for-wmc-setup-v${{ inputs.version }}.exe
+          path: installer/Output/winactor-for-wmc-setup-v${{ inputs.version }}.exe
 
       # ── GitHub Release に公開 ──────────────────────────────
       - name: Publish release
@@ -134,4 +134,4 @@ jobs:
         with:
           tag_name: v${{ inputs.version }}-installer
           name: "WinActor for WMC v${{ inputs.version }} Installer"
-          files: Output/winactor-for-wmc-setup-v${{ inputs.version }}.exe
+          files: installer/Output/winactor-for-wmc-setup-v${{ inputs.version }}.exe
