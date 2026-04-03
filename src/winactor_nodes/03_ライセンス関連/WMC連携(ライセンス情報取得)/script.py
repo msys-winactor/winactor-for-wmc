@@ -1,8 +1,7 @@
 import sys
 import datetime
 
-sys.path.append(r"C:\Users\Public\msys-winactor-adapters\libs\runtime")
-sys.path.append(r"C:\Users\Public\msys-winactor-adapters\libs\winactor_for_wmc")
+sys.path.append(r"C:\Users\public\msys-winactor-adapters\libs")
 
 from winactor_for_wmc.licenses import get_licenses
 
@@ -39,9 +38,18 @@ def main(**kwargs):
 
 
 if __name__ == "__main__":
-    BASE_URL = !WMC URL!        # type: ignore
-    TOKEN = !アクセストークン!    # type: ignore
+    BASE_URL = !*WMC URL!        # type: ignore
+    TOKEN = !*アクセストークン!    # type: ignore
     FEATURE_INDEX = !ライセンス名|フル機能版,実行版,管理実行版!   # type: ignore
+
+    # 必須パラメータチェック
+    missing_params = []
+    if not BASE_URL or not str(BASE_URL).strip():
+        missing_params.append("WMC URL")
+    if not TOKEN or not str(TOKEN).strip():
+        missing_params.append("アクセストークン")
+    if missing_params:
+        raise winactor.WinActorError(1, f"必須パラメータが入力されていません: {', '.join(missing_params)}")  # type: ignore
 
     #再代入
     if FEATURE_INDEX == "フル機能版":

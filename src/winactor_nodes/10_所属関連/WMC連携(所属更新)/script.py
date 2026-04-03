@@ -1,7 +1,6 @@
 import sys
 
-sys.path.append(r"C:\Users\Public\msys-winactor-adapters\libs\runtime")
-sys.path.append(r"C:\Users\Public\msys-winactor-adapters\libs\winactor_for_wmc")
+sys.path.append(r"C:\Users\public\msys-winactor-adapters\libs")
 
 from winactor_for_wmc.departments import put_departments
 
@@ -11,9 +10,20 @@ def main(**kwargs):
 
 
 if __name__ == "__main__":
-    BASE_URL = !WMC URL!  # type: ignore
-    TOKEN = !アクセストークン!  # type: ignore
-    DEPARTMENT_ID = !所属ID!  # type: ignore
+    BASE_URL = !*WMC URL!  # type: ignore
+    TOKEN = !*アクセストークン!  # type: ignore
+    DEPARTMENT_ID = !*所属ID!  # type: ignore
+
+    # 必須パラメータチェック
+    missing_params = []
+    if not BASE_URL or not str(BASE_URL).strip():
+        missing_params.append("WMC URL")
+    if not TOKEN or not str(TOKEN).strip():
+        missing_params.append("アクセストークン")
+    if not DEPARTMENT_ID or not str(DEPARTMENT_ID).strip():
+        missing_params.append("所属ID")
+    if missing_params:
+        raise winactor.WinActorError(1, f"必須パラメータが入力されていません: {', '.join(missing_params)}")  # type: ignore
 
     NAME = !更新後の所属名!  # type: ignore
     REMARKS = !更新後のメモ!  # type: ignore

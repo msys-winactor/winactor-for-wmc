@@ -1,21 +1,20 @@
 import sys
 
-sys.path.append(r"C:\Users\Public\msys-winactor-adapters\libs\runtime")
-sys.path.append(r"C:\Users\Public\msys-winactor-adapters\libs\winactor_for_wmc")
+sys.path.append(r"C:\Users\public\msys-winactor-adapters\libs")
 
 from winactor_for_wmc.schedules import post_schedules
 
 # 各種パラメータ
-BASE_URL = !WMC URL!  # type: ignore
-TOKEN = !アクセストークン!  # type: ignore
-NAME = !スケジュール名!  # type: ignore
+BASE_URL = !*WMC URL!  # type: ignore
+TOKEN = !*アクセストークン!  # type: ignore
+NAME = !*スケジュール名!  # type: ignore
 DEPARTMENT1 = !所属(親)!  # type: ignore
 DEPARTMENT2 = !所属(子)!  # type: ignore
 DEPARTMENT3 = !所属(孫)!  # type: ignore
-SCENARIO_ID = !シナリオID!  # type: ignore
+SCENARIO_ID = !*シナリオID!  # type: ignore
 WINACTORS = !実行WinActor(ID)!  # type: ignore
 DAYOFWEEK = !曜日|月曜日,火曜日,水曜日,木曜日,金曜日,土曜日,日曜日!  # type: ignore
-TASKTIME = !実行時間(hh:mm:ss)!  # type: ignore
+TASKTIME = !*実行時間(hh:mm:ss)!  # type: ignore
 ARCHIVE = !アーカイブ|シナリオ実行後に作業ディレクトリのアーカイブを作成しない,シナリオ実行後に作業ディレクトリのアーカイブを作成する!  # type: ignore
 LOG = !ログ|シナリオ実行時のログを作業ディレクトリに出力しない,シナリオ実行時のログを作業ディレクトリに出力する!  # type: ignore
 ONERROR = !異常発生時|シナリオ実行時に異常が発生した場合、クリーンし、次のシナリオの実行の準備をする,シナリオ実行時に異常が発生した場合、そこで停止させる!  # type: ignore
@@ -29,6 +28,21 @@ def main(**kwargs):
     return post_schedules.run(**kwargs)
 
 if __name__ == "__main__":
+    # 必須パラメータチェック
+    missing_params = []
+    if not BASE_URL or not str(BASE_URL).strip():
+        missing_params.append("WMC URL")
+    if not TOKEN or not str(TOKEN).strip():
+        missing_params.append("アクセストークン")
+    if not NAME or not str(NAME).strip():
+        missing_params.append("スケジュール名")
+    if not SCENARIO_ID or not str(SCENARIO_ID).strip():
+        missing_params.append("シナリオID")
+    if not TASKTIME or not str(TASKTIME).strip():
+        missing_params.append("実行時間(hh:mm:ss)")
+    if missing_params:
+        raise winactor.WinActorError(1, f"必須パラメータが入力されていません: {', '.join(missing_params)}")  # type: ignore
+
     # 変換ロジック
     winactor_list = [w.strip() for w in WINACTORS.split(",") if w.strip()] if WINACTORS else []
 

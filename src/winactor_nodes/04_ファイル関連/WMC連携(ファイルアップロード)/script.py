@@ -1,14 +1,13 @@
 import sys
 
-sys.path.append(r"C:\Users\Public\msys-winactor-adapters\libs\runtime")
-sys.path.append(r"C:\Users\Public\msys-winactor-adapters\libs\winactor_for_wmc")
+sys.path.append(r"C:\Users\public\msys-winactor-adapters\libs")
 
 from winactor_for_wmc.files import post_files
 
 # 各種パラメータ
-BASE_URL = !WMC URL!  # type: ignore
-TOKEN = !アクセストークン!  # type: ignore
-FILE_PATH = !ファイル名!  # type: ignore
+BASE_URL = !*WMC URL!  # type: ignore
+TOKEN = !*アクセストークン!  # type: ignore
+FILE_PATH = !*ファイル名!  # type: ignore
 DEPARTMENT1 = !所属(親)!  # type: ignore
 DEPARTMENT2 = !所属(子)!  # type: ignore
 DEPARTMENT3 = !所属(孫)!  # type: ignore
@@ -19,6 +18,17 @@ def main(**kwargs):
     return post_files.run(**kwargs)
 
 if __name__ == "__main__":
+    # 必須パラメータチェック
+    missing_params = []
+    if not BASE_URL or not str(BASE_URL).strip():
+        missing_params.append("WMC URL")
+    if not TOKEN or not str(TOKEN).strip():
+        missing_params.append("アクセストークン")
+    if not FILE_PATH or not str(FILE_PATH).strip():
+        missing_params.append("ファイル名")
+    if missing_params:
+        raise winactor.WinActorError(1, f"必須パラメータが入力されていません: {', '.join(missing_params)}")  # type: ignore
+
     # パラメータ整形
     file_data = {}
 

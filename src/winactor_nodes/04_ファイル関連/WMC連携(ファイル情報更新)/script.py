@@ -1,7 +1,6 @@
 import sys
 
-sys.path.append(r"C:\Users\Public\msys-winactor-adapters\libs\runtime")
-sys.path.append(r"C:\Users\Public\msys-winactor-adapters\libs\winactor_for_wmc")
+sys.path.append(r"C:\Users\public\msys-winactor-adapters\libs")
 
 from winactor_for_wmc.files import put_files_info
 
@@ -11,11 +10,24 @@ def main(**kwargs):
 
 
 if __name__ == "__main__":
-    BASE_URL = !WMC URL!  # type: ignore
-    TOKEN = !アクセストークン!  # type: ignore
-    FILE_ID = !ファイルID!  # type: ignore
+    BASE_URL = !*WMC URL!  # type: ignore
+    TOKEN = !*アクセストークン!  # type: ignore
+    FILE_ID = !*ファイルID!  # type: ignore
+    NAME = !*更新後のファイル名!  # type: ignore
 
-    NAME = !更新後のファイル名!  # type: ignore
+    # 必須パラメータチェック
+    missing_params = []
+    if not BASE_URL or not str(BASE_URL).strip():
+        missing_params.append("WMC URL")
+    if not TOKEN or not str(TOKEN).strip():
+        missing_params.append("アクセストークン")
+    if not FILE_ID or not str(FILE_ID).strip():
+        missing_params.append("ファイルID")
+    if not NAME or not str(NAME).strip():
+        missing_params.append("*更新後のファイル名")
+    if missing_params:
+        raise winactor.WinActorError(1, f"必須パラメータが入力されていません: {', '.join(missing_params)}")  # type: ignore
+
     FILETAG = !更新後のファイルタグ!  # type: ignore
     DESCRIPTION = !更新後のファイル説明!  # type: ignore
 

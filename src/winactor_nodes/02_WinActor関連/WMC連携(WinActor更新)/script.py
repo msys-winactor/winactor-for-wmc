@@ -1,15 +1,14 @@
 import sys
 
-sys.path.append(r"C:\Users\Public\msys-winactor-adapters\libs\runtime")
-sys.path.append(r"C:\Users\Public\msys-winactor-adapters\libs\winactor_for_wmc")
+sys.path.append(r"C:\Users\public\msys-winactor-adapters\libs")
 
 from winactor_for_wmc.winactors import put_winactors
 
 # 各種パラメータ
-BASE_URL = !WMC URL!  # type: ignore
-TOKEN = !アクセストークン!  # type: ignore
-WINACTOR_ID = !WinActorID!  # type: ignore
-NAME = !WinActor名!  # type: ignore
+BASE_URL = !*WMC URL!  # type: ignore
+TOKEN = !*アクセストークン!  # type: ignore
+WINACTOR_ID = !*WinActorID!  # type: ignore
+NAME = !*WinActor名!  # type: ignore
 DEPARTMENT1 = !所属(親)!  # type: ignore
 DEPARTMENT2 = !所属(子)!  # type: ignore
 DEPARTMENT3 = !所属(孫)!  # type: ignore
@@ -24,6 +23,19 @@ def main(**kwargs):
     return put_winactors.run(**kwargs)
 
 if __name__ == "__main__":
+    # 必須パラメータチェック
+    missing_params = []
+    if not BASE_URL or not str(BASE_URL).strip():
+        missing_params.append("WMC URL")
+    if not TOKEN or not str(TOKEN).strip():
+        missing_params.append("アクセストークン")
+    if not WINACTOR_ID or not str(WINACTOR_ID).strip():
+        missing_params.append("WinActorID")
+    if not NAME or not str(NAME).strip():
+        missing_params.append("WinActor名")
+    if missing_params:
+        raise winactor.WinActorError(1, f"必須パラメータが入力されていません: {', '.join(missing_params)}")  # type: ignore
+
     # AUTOREBOOT 再代入（bool化）
     auto_map = {
         "する": "true",

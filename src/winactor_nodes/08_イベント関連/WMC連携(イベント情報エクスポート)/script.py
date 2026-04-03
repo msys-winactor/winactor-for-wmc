@@ -1,8 +1,7 @@
 import sys
 import os
 
-sys.path.append(r"C:\Users\Public\msys-winactor-adapters\libs\runtime")
-sys.path.append(r"C:\Users\Public\msys-winactor-adapters\libs\winactor_for_wmc")
+sys.path.append(r"C:\Users\public\msys-winactor-adapters\libs")
 
 from winactor_for_wmc.events import get_events_csv
 
@@ -12,15 +11,26 @@ def main(**kwargs):
 
 
 if __name__ == "__main__":
-    BASE_URL = !WMC URL!  # type: ignore
-    TOKEN = !アクセストークン!  # type: ignore
+    BASE_URL = !*WMC URL!  # type: ignore
+    TOKEN = !*アクセストークン!  # type: ignore
 
     # 追加: 部門条件（所属名のみを受け取り、モジュール側で所属IDへ変換）
     DEPARTMENT_NAME1 = !所属(親)!   # type: ignore
     DEPARTMENT_NAME2 = !所属(子)!   # type: ignore
     DEPARTMENT_NAME3 = !所属(孫)!   # type: ignore
 
-    CSV_SAVE_PATH = !CSVファイル名!  # type: ignore
+    CSV_SAVE_PATH = !*CSVファイル名!  # type: ignore
+
+    # 必須パラメータチェック
+    missing_params = []
+    if not BASE_URL or not str(BASE_URL).strip():
+        missing_params.append("WMC URL")
+    if not TOKEN or not str(TOKEN).strip():
+        missing_params.append("アクセストークン")
+    if not CSV_SAVE_PATH or not str(CSV_SAVE_PATH).strip():
+        missing_params.append("CSVファイル名")
+    if missing_params:
+        raise winactor.WinActorError(1, f"必須パラメータが入力されていません: {', '.join(missing_params)}")  # type: ignore
     ENCODING = !エンコーディング|MS932,UTF-8!  # type: ignore
     CREATED_AT_TYPE = !条件|次の範囲内,以後,以前!  # type: ignore
     CREATED_AT_DATE1 = !日付指定1(yyyy/MM/dd)!  # type: ignore
