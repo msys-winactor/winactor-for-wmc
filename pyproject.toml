@@ -28,6 +28,9 @@ flake8-pyproject = "^1.2.3"
 requests = ">=2.32.3,<3.0.0"
 pycryptodome = "^3.21.0"
 pyarmor = "^9.0.0"
+mkdocs = "^1.6.0"
+mkdocs-material = "^9.6.0"
+pyyaml = "^6.0.0"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
@@ -54,3 +57,10 @@ exclude = [
 [tool.black]
 line-length = 88
 target-version = ["py312"]
+
+[tool.manual]
+site-name = "WinActor for WMC マニュアル"
+pages = [
+    { title = "セットアップ", path = "setup/wmc-admin.md", section = "導入ガイド" },
+    { title = "WinActor ユーザー向け", path = "setup/winactor-user.md", section = "導入ガイド" },
+]
