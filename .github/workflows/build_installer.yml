@@ -115,15 +115,11 @@ jobs:
 
       # ── InnoSetup でインストーラーをビルド ─────────────────
       - name: Build installer with InnoSetup
-        shell: bash
+        shell: cmd
         run: |
-          SOURCE_DIR=$(cygpath -w "$GITHUB_WORKSPACE/staging")
-          iscc \
-            "/DMyAppVersion=${{ inputs.version }}" \
-            "/DSourceDir=$SOURCE_DIR" \
-            installer/installer.iss
-          echo "=== Installer output ==="
-          ls -la Output/
+          iscc /DMyAppVersion=${{ inputs.version }} /DSourceDir=%GITHUB_WORKSPACE%\staging installer\installer.iss
+          echo === Installer output ===
+          dir Output\
 
       # ── アーティファクトのアップロード ─────────────────────
       - name: Upload installer artifact
