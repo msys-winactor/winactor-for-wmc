@@ -12,6 +12,7 @@ readme = "README.md"
 copy-to-public = "tools.package_copy_to_public:main"
 release = "tools.release:main"
 vendor = "tools.vendor_packages:vendor_dependencies"
+generate-manual = "tools.generate_manual:main"
 
 [tool.poetry.dependencies]
 python = ">=3.12.8,<3.13"
@@ -28,6 +29,9 @@ flake8-pyproject = "^1.2.3"
 requests = ">=2.32.3,<3.0.0"
 pycryptodome = "^3.21.0"
 pyarmor = "^9.0.0"
+mkdocs = "^1.6.0"
+mkdocs-material = "^9.6.0"
+pyyaml = "^6.0.0"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
@@ -54,3 +58,9 @@ exclude = [
 [tool.black]
 line-length = 88
 target-version = ["py312"]
+
+[tool.manual]
+site-name = "WinActor for WMC マニュアル"
+pages = [
+    { title = "準備", path = "setup/index.md", section = "導入ガイド" },
+]
