@@ -3,7 +3,7 @@ name = "winactor_for_wmc"
 packages = [
     { include = "winactor_for_wmc", from = "src" }
 ]
-version = "1.0.4"
+version = "1.0.0"
 description = "winactor_for_wmc project"
 authors = ["Your Name <you@example.com>"]
 readme = "README.md"
