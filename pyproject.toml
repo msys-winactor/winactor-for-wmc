@@ -12,6 +12,7 @@ readme = "README.md"
 copy-to-public = "tools.package_copy_to_public:main"
 release = "tools.release:main"
 vendor = "tools.vendor_packages:vendor_dependencies"
+generate-manual = "tools.generate_manual:main"
 
 [tool.poetry.dependencies]
 python = ">=3.12.8,<3.13"

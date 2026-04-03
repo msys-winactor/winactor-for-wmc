@@ -13,10 +13,8 @@ import sys
 TOOLS = [
     ("1", "mkdocs-serve", "マニュアルプレビュー（http://localhost:8000）"),
     ("2", "mkdocs-build", "マニュアルビルド（ZIP 配布ファイル生成）"),
-    ("3", "copy-to-public", "PyArmor 暗号化 + Public フォルダ配置"),
-    ("4", "copy-to-public-plain", "Public フォルダ配置（暗号化なし・開発用）"),
-    ("5", "copy-to-public-quick", "ソースのみ配置（ベンダリングスキップ）"),
-    ("6", "release --bump patch", "パッチリリース（バージョンバンプ + ZIP）"),
+    ("3", "copy-to-public", "Public フォルダ配置"),
+    ("4", "release --bump patch", "パッチリリース（バージョンバンプ + ZIP）"),
 ]
 
 COMMANDS = {
@@ -29,19 +27,6 @@ COMMANDS = {
         "--build",
     ],
     "copy-to-public": [sys.executable, "-m", "tools.package_copy_to_public"],
-    "copy-to-public-plain": [
-        sys.executable,
-        "-m",
-        "tools.package_copy_to_public",
-        "--no-pyarmor",
-    ],
-    "copy-to-public-quick": [
-        sys.executable,
-        "-m",
-        "tools.package_copy_to_public",
-        "--no-pyarmor",
-        "--skip-vendor",
-    ],
     "release --bump patch": [
         sys.executable,
         "-m",
