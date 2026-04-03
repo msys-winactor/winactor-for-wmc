@@ -244,8 +244,8 @@ def generate_node_markdown(node: NodeInfo) -> str:
     input_vars = [v for v in node.variables if v.direction == "input"]
     output_vars = [v for v in node.variables if v.direction == "output"]
 
-    # 入力変数
-    lines.append("## 入力変数")
+    # 設定値
+    lines.append("## 設定値")
     lines.append("")
 
     if input_vars:
@@ -255,13 +255,14 @@ def generate_node_markdown(node: NodeInfo) -> str:
             req = " ***\\****" if var.required else ""
             desc = _escape_for_table(var.description, br=True)
             lines.append(f"| `{var.name}`{req} | {desc} |")
+        lines.append("")
     else:
         lines.append("!!! info")
-        lines.append("    入力変数はありません。")
+        lines.append("    設定値はありません。")
         lines.append("")
 
-    # 出力変数
-    lines.append("## 出力変数")
+    # 戻り値
+    lines.append("## 戻り値")
     lines.append("")
 
     if output_vars:
@@ -270,9 +271,10 @@ def generate_node_markdown(node: NodeInfo) -> str:
         for var in output_vars:
             desc = _escape_for_table(var.description, br=True)
             lines.append(f"| `{var.name}` | {desc} |")
+        lines.append("")
     else:
         lines.append("!!! info")
-        lines.append("    出力変数はありません。")
+        lines.append("    戻り値はありません。")
         lines.append("")
 
     return "\n".join(lines) + "\n"
@@ -302,13 +304,13 @@ def generate_index_markdown(nodes: list[NodeInfo]) -> str:
         lines.append(f"*{len(cat_nodes)} ノード*")
         lines.append("")
 
-        lines.append("| ノード名 | バージョン | 概要 |")
-        lines.append("|----------|-----------|------|")
+        lines.append("| ノード名 | 概要 |")
+        lines.append("|----------|------|")
 
         for node in cat_nodes:
             md_path = f"nodes/{node.category}/{node.name}.md"
             desc = _escape_for_table(node.description)
-            lines.append(f"| [{node.name}]({md_path}) | {node.version} | {desc} |")
+            lines.append(f"| [{node.name}]({md_path}) | {desc} |")
 
         lines.append("")
 
