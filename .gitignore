@@ -21,3 +21,10 @@ build/
 _vendor/
 
 .build_vendor/
+
+# MkDocs
+site/
+docs/nodes/
+docs/node-list.md
+docs/stylesheets/extra.css
+mkdocs.yml
