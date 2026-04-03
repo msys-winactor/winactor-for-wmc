@@ -116,6 +116,8 @@ jobs:
       # ── InnoSetup でインストーラーをビルド ─────────────────
       - name: Build installer with InnoSetup
         shell: bash
+        env:
+          MSYS_NO_PATHCONV: "1"
         run: |
           SOURCE_DIR=$(cygpath -w "$GITHUB_WORKSPACE/staging")
           iscc \
