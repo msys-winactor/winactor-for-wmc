@@ -117,9 +117,10 @@ jobs:
       - name: Build installer with InnoSetup
         shell: bash
         run: |
+          SOURCE_DIR=$(cygpath -w "$GITHUB_WORKSPACE/staging")
           iscc \
             "/DMyAppVersion=${{ inputs.version }}" \
-            "/DSourceDir=$(cygpath -w "$GITHUB_WORKSPACE/staging")" \
+            "/DSourceDir=$SOURCE_DIR" \
             installer/installer.iss
           echo "=== Installer output ==="
           ls -la Output/
