@@ -22,7 +22,7 @@ WinActor for WMC ライブラリを WinActor に追加します。
 
 | 設定項目 | 説明 |
 |----------|------|
-| WMC URL | `https://manager-s.winactor.biz/********(英数字混在)` |
+| WMC URL | 例）`https://manager-s.winactor.biz/********(英数字混在)` |
 | ユーザ名 | WMC のユーザ名を指定します |
 | パスワード | WMC のパスワードを指定します。マスクにチェックを入れる等セキュリティ面の考慮を実施推奨いたします |
 
