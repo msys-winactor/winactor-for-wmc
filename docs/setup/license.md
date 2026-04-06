@@ -40,20 +40,17 @@ MSYS WinActor Adapters ライセンス認証ツールは、MSYS 提供の全 Win
 
 1. 「製品 ID 生成」タブを開きます
 
-    !!! todo "画像差し込み: `img/license-tab-product-id.png`"
-        ライセンス認証ツールの「製品 ID 生成」タブ画面
+    ![「製品 ID 生成」タブ画面](img/license-tab-product-id.png)
 
 2. 会社名・部署名・WinActor 保守契約 ID・WinActor ライセンス終了日を入力します
 
-    !!! todo "画像差し込み: `img/license-product-id-input.png`"
-        各入力欄に値を入力した状態の画面
+    ![各入力欄に値を入力した状態](img/license-product-id-input.png)
 
 3. ライセンス種別（ノードロック または フローティング）を選択します
 4. 「製品 ID を生成」ボタンをクリックします
 5. 製品 ID が表示されるので、「コピー」でクリップボードにコピーするか「ファイル保存」でファイルに保存します
 
-    !!! todo "画像差し込み: `img/license-product-id-result.png`"
-        製品 ID 生成完了画面（コピー・ファイル保存ボタンが見える状態）
+    ![製品 ID 生成完了画面](img/license-product-id-result.png)
 
 ### Step 2：製品 ID の送付 { #step2 }
 
@@ -85,36 +82,30 @@ MSYS WinActor Adapters ライセンス認証ツールは、MSYS 提供の全 Win
 
 1. 「ライセンス一覧」タブを開きます
 
-    !!! todo "画像差し込み: `img/license-tab-list.png`"
-        「ライセンス一覧」タブ画面（ライセンス追加ボタンが見える状態）
+    ![「ライセンス一覧」タブ画面](img/license-tab-list.png)
 
 2. 「ライセンス追加」ボタンをクリックします
 3. ライセンスファイル（`.json`）をドラッグ＆ドロップまたはファイル選択で取り込みます
 
-    !!! todo "画像差し込み: `img/license-file-drop.png`"
-        ライセンスファイルのドラッグ＆ドロップ画面
+    ![ライセンスファイルのドラッグ＆ドロップ画面](img/license-file-drop.png)
 
 4. 確認画面が表示されるので、ライセンス情報（製品名・種別・有効期限）を確認し「登録」をクリックします
 
-    !!! todo "画像差し込み: `img/license-confirm-dialog.png`"
-        ライセンス情報の確認ダイアログ
+    ![ライセンス登録確認ダイアログ](img/license-confirm-dialog.png)
 
 5. ライセンス一覧にライセンスが追加されたことを確認します
 
-    !!! todo "画像差し込み: `img/license-registered-list.png`"
-        ライセンス登録完了後の一覧画面
+    ![ライセンス登録完了後の一覧画面](img/license-registered-list.png)
 
 ## ライセンスの削除
 
-1. ライセンス一覧で対象のライセンスにカーソルを合わせ、:material-delete: アイコンをクリックします
+1. ライセンス一覧で対象のライセンスにカーソルを合わせ、削除アイコンをクリックします
 
-    !!! todo "画像差し込み: `img/license-delete-icon.png`"
-        ライセンス一覧で削除アイコンにカーソルを合わせた状態
+    ![ライセンス一覧の削除アイコン](img/license-delete-icon.png)
 
 2. 確認ダイアログで対象の製品名を確認し「削除」をクリックします
 
-    !!! todo "画像差し込み: `img/license-delete-confirm.png`"
-        削除確認ダイアログ
+    ![ライセンス削除確認ダイアログ](img/license-delete-confirm.png)
 
 3. 削除完了後、**ライセンスクリア証明書**が自動的に生成・保存されます
 
