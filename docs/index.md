@@ -28,9 +28,8 @@ WinActor for WMC は、RPA ツール「WinActor」から WinActor Manager on Clo
 
 ## はじめかた
 
-1. [ライセンス認証ツール](setup/license-tool.md) でライセンス認証を行う
-2. [準備](setup/index.md) に従って WinActor でアクセストークンを取得する
-3. 各ノードをシナリオに追加して利用する
+1. [導入ガイド](setup/index.md) に従ってライセンス認証と WinActor の設定を行う
+2. 各ノードをシナリオに追加して利用する
 
 ## 利用上の注意
 

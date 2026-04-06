@@ -63,5 +63,5 @@ target-version = ["py312"]
 site-name = "WinActor for WMC マニュアル"
 pages = [
     { title = "ライセンス認証ツール", path = "setup/license-tool.md", section = "導入ガイド" },
-    { title = "準備", path = "setup/index.md", section = "導入ガイド" },
+    { title = "導入ガイド", path = "setup/index.md", section = "導入ガイド" },
 ]
