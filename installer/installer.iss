@@ -22,8 +22,7 @@ Compression=lzma2
 SolidCompression=yes
 PrivilegesRequired=lowest
 CreateAppDir=yes
-Uninstallable=yes
-UninstallDisplayName={#MyAppName}
+Uninstallable=no
 
 [Languages]
 Name: "japanese"; MessagesFile: "compiler:Languages\Japanese.isl"
