@@ -63,7 +63,7 @@ MSYS WinActor Adapters ライセンス認証ツールは、MSYS 提供の全 Win
 
 - **送付先**: [support.winactor@marubeni-sys.com](mailto:support.winactor@marubeni-sys.com)
 
-??? example "メールテンプレート"
+??? quote ":material-email-outline: メールテンプレート"
     **件名**: 【ライセンス申請】WinActor for WMC ライセンス発行依頼
 
     ```
