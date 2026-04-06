@@ -29,7 +29,7 @@ Name: "japanese"; MessagesFile: "compiler:Languages\Japanese.isl"
 
 [InstallDelete]
 ; Clean up previous installation to prevent stale files from remaining
-Type: filesandordirs; Name: "{app}\pyarmor_runtime_011041"
+; Note: pyarmor_runtime_011041 is shared across adapters, so do not delete it
 Type: filesandordirs; Name: "{app}\winactor_for_wmc"
 
 [Files]
