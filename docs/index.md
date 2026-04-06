@@ -23,7 +23,7 @@ WinActor for WMC は、RPA ツール「WinActor」から WinActor Manager on Clo
 
 | 項目 | 要件 |
 |------|------|
-| OS | Windows 10 以降 |
+| OS | Windows 11 以降 |
 | WinActor | 7.6 以上 |
 
 ## はじめかた
