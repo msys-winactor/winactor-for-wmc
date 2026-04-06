@@ -7,7 +7,7 @@ MSYS WinActor Adapters ライセンス認証ツールにてライセンス認証
 !!! warning "重要"
     ライセンス認証が完了していないと WinActor for WMC ライブラリを使用することが出来ません。
 
-詳細につきましては、[ライセンス認証ツール](license-tool.md) をご参照ください。
+詳細につきましては、[ライセンス認証](license.md) をご参照ください。
 
 ## WinActor での設定
 
