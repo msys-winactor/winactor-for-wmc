@@ -401,13 +401,32 @@ def build_nav(
             nav.append({page["title"]: page["path"]})
 
     # section をトップレベルに挿入（出現順を維持）
+    # navigation.indexes 対応: setup/index.md があればセクションの index ページにする
     seen_sections: set[str] = set()
     for page in static_pages:
         if "section" in page:
             sec = page["section"]
             if sec not in seen_sections:
                 seen_sections.add(sec)
-                nav.append({sec: sections[sec]})
+                section_items: list = []
+                # セクション index ページを検出して先頭に配置
+                # section 内の全ページからディレクトリを収集し、共通の index.md を探す
+                sec_dirs = {
+                    str(Path(p["path"]).parent)
+                    for p in static_pages
+                    if p.get("section") == sec
+                }
+                index_path = None
+                for d in sorted(sec_dirs):
+                    candidate = f"{d}/index.md"
+                    if (DOCS_DIR / candidate).exists():
+                        index_path = candidate
+                        break
+                index_file = DOCS_DIR / index_path if index_path else None
+                if index_file is not None and index_file.exists():
+                    section_items.append({sec: index_path})
+                section_items.extend(sections[sec])
+                nav.append({sec: section_items})
 
     # ノードリファレンス
     categories: dict[str, list[dict[str, str]]] = {}
