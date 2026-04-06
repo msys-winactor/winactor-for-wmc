@@ -410,9 +410,20 @@ def build_nav(
                 seen_sections.add(sec)
                 section_items: list = []
                 # セクション index ページを検出して先頭に配置
-                index_path = page["path"].rsplit("/", 1)[0] + "/index.md"
-                index_file = DOCS_DIR / index_path
-                if index_file.exists():
+                # section 内の全ページからディレクトリを収集し、共通の index.md を探す
+                sec_dirs = {
+                    str(Path(p["path"]).parent)
+                    for p in static_pages
+                    if p.get("section") == sec
+                }
+                index_path = None
+                for d in sorted(sec_dirs):
+                    candidate = f"{d}/index.md"
+                    if (DOCS_DIR / candidate).exists():
+                        index_path = candidate
+                        break
+                index_file = DOCS_DIR / index_path if index_path else None
+                if index_file is not None and index_file.exists():
                     section_items.append({sec: index_path})
                 section_items.extend(sections[sec])
                 nav.append({sec: section_items})
