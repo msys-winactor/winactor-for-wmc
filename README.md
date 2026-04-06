@@ -1,44 +1,74 @@
-# Template Python
+# WinActor for WMC
 
-## 📖 概要
+## 概要
 
-このリポジトリは、Python を使用したテンプレートプロジェクトです。
+WinActor Manager on Cloud（WMC）の API（v1.2）をラップし、WinActor から WMC を操作するための Python ライブラリです。  
+10 カテゴリ・53 種類の WinActor ノードを提供し、RPA ワークフローから WMC の各種リソースを管理できます。
 
 ---
 
-## 📁 フォルダ構成
+## 動作要件
+
+- Windows 11 以降
+- WinActor 7.6 以降
+- Python 3.12.8（32bit）
+- WinActor Manager on Cloud Ver. 3.8 以降
+
+---
+
+## フォルダ構成
 
 ```
 .
 ├── src/
-│   ├── template_python/         # パッケージ実装（フォルダ名はプロジェクトに合わせて変更）
-│   └── winactor_nodes/          # WinActorノード用スクリプト（パッケージ外）
+│   ├── winactor_for_wmc/          # メインパッケージ（WMC API ラッパー）
+│   │   ├── auth/                  # 認証（トークン取得）
+│   │   ├── common/                # 共通ユーティリティ（API クライアント、暗号化、ライセンス検証）
+│   │   ├── schedules/             # スケジュール管理
+│   │   ├── users/                 # ユーザ管理
+│   │   ├── departments/           # 所属管理
+│   │   ├── winactors/             # WinActor 管理
+│   │   ├── scenarios/             # シナリオ管理
+│   │   ├── tasks/                 # タスク管理
+│   │   ├── files/                 # ファイル管理
+│   │   ├── licenses/              # ライセンス管理
+│   │   ├── events/                # イベントログ
+│   │   └── statistics/            # 利用統計
+│   │
+│   └── winactor_nodes/            # WinActor ノード用スクリプト（53 ノード）
 │
-├── tests/                       # pytest用テストスクリプト
-├── tools/
+├── tests/                         # pytest テスト
+├── tools/                         # 開発ツール
 │   ├── package_copy_to_public.py  # パッケージ配置スクリプト
-│   └── release.py               # バージョン更新 + ZIPリリース作成スクリプト
-├── pyproject.toml               # Poetry設定
-└── README.md                    # 本ドキュメント
+│   ├── release.py                 # バージョン更新 + ZIP リリース作成
+│   ├── vendor_packages.py         # 依存パッケージのベンダリング
+│   └── generate_manual.py         # MkDocs マニュアル自動生成
+├── installer/                     # InnoSetup インストーラ定義
+├── docs/                          # MkDocs ドキュメントソース
+├── pyproject.toml                 # Poetry 設定
+└── README.md                      # 本ドキュメント
 ```
 
 ---
 
-## 🛠 主な機能
+## 提供ノード一覧
 
-- **パッケージ**
-
-  - `src/template_python`
-
-- **WinActor ノード操作**
-
-  - `src/winactor_nodes`
+| カテゴリ | ノード数 | 主な操作 |
+|---|---|---|
+| 01\_認証関連 | 1 | アクセストークン取得 |
+| 02\_WinActor関連 | 5 | 情報エクスポート、更新、削除、再起動、利用状況エクスポート |
+| 03\_ライセンス関連 | 3 | ライセンス情報取得、利用状況取得、FL 利用状況エクスポート |
+| 04\_ファイル関連 | 5 | アップロード、ダウンロード、情報更新、削除、情報エクスポート |
+| 05\_シナリオ関連 | 4 | 登録、更新、削除、情報エクスポート |
+| 06\_スケジュール関連 | 18 | 登録・更新（即時/日時指定/毎日/毎週/毎月/月末/条件指定）、有効化/無効化、削除、情報エクスポート |
+| 07\_タスク関連 | 3 | 情報エクスポート、削除、アーカイブファイル登録履歴取得 |
+| 08\_イベント関連 | 3 | ログ取得、ログ件数取得、情報エクスポート |
+| 09\_ユーザ関連 | 6 | 登録、更新、削除、情報エクスポート、情報インポート、承認待ちスケジュール情報エクスポート |
+| 10\_所属関連 | 5 | 登録、更新、削除、情報エクスポート、情報インポート |
 
 ---
 
-## ✅ テスト実行
-
-テストコードは `pytest` フレームワークを利用します。
+## テスト実行
 
 ```powershell
 poetry run pytest
@@ -46,101 +76,59 @@ poetry run pytest
 
 ---
 
-## 💻 開発環境
+## 開発環境
 
-- Python 3.12.8（32bit 固定バージョン）
-- Poetry を使用した依存管理
+- Python 3.12.8（32bit 固定）
+- Poetry による依存管理
 - VSCode + flake8 / black / isort / pytest
+- pre-commit によるコードチェック
 
 ---
 
-## 🚀 プロジェクトのはじめかた（テンプレート利用）
+## 開発ツール
 
-このリポジトリをテンプレートとして使い、新しいプロジェクトを開始する手順です。
+### 依存パッケージのベンダリング
 
-### 1. GitHub 上で新規リポジトリを作成
-
-1. 以下のリンクを開く  
-   👉 https://github.com/msys-winactor/template-python/generate
-2. リポジトリ名を入力（例：`my-winactor-lib`）
-3. 「Private」または「Public」を選択し、「Create repository from template」をクリック
-
-### 2. ローカルにクローン
+外部依存（requests, pycryptodome 等）を `_vendor/` に同梱します。
 
 ```powershell
-git clone https://github.com/<ユーザー名>/<新しいリポジトリ名>.git
-cd <新しいリポジトリ名>
+poetry run vendor
 ```
 
-### 3. Poetry 環境をセットアップ
+### パッケージの配置
 
-```powershell
-poetry install
-```
-
-### 4. パッケージ名の変更
-
-- `src/template_python/` のフォルダ名をプロジェクト名に合わせて変更（例：`my_winactor_lib/`）
-- `pyproject.toml` の `[tool.poetry] name` を変更：
-
-```toml
-[tool.poetry]
-name = "my-winactor-lib"
-```
-
-### 5. パッケージを Public フォルダにコピー
+難読化済みパッケージを公開フォルダへコピーします。
 
 ```powershell
 poetry run copy-to-public
 ```
 
-以上で開発を開始できます！
+### マニュアル自動生成
 
----
-
-## 📦 リリース手順
-
-このプロジェクトには、`tools/release.py` によるリリースツールが含まれています。  
-以下の手順で `bin/winactor_nodes/` フォルダを ZIP 形式でパッケージし、必要に応じて Git タグの作成・push まで実行できます。
-
-### ✅ 実行方法
+WinActor ノードのメタデータから MkDocs ドキュメントを生成します。
 
 ```powershell
-python tools/release.py --bump [major|minor|patch] [--tag]
+poetry run generate-manual
+poetry run generate-manual --build          # HTML ビルド + ZIP 作成
+poetry run generate-manual --build --no-zip # HTML ビルドのみ
+poetry run generate-manual --clean          # 生成済みファイルのクリーンアップ
 ```
 
-| オプション | 説明                                                                                                                                                                 |
-| ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--bump`   | バージョンの更新種別（必須）<br>`major`: メジャー更新（例: 1.0.0 → 2.0.0）<br>`minor`: マイナー更新（例: 1.2.3 → 1.3.0）<br>`patch`: パッチ更新（例: 1.2.3 → 1.2.4） |
-| `--tag`    | `pyproject.toml`のバージョンを更新し commit + Git タグ`vX.Y.Z` を作成 + push                                                                                         |
+### リリース
 
----
-
-### 🗂 出力内容
-
-- ZIP ファイルは `dist/` フォルダに出力されます
-- ファイル名：
-  ```
-  <リポジトリ名>-v<バージョン>.zip
-  例: my-repo-v1.2.4.zip
-  ```
-
----
-
-### 🧪 使用例
+バージョン更新と ZIP パッケージの作成を行います。
 
 ```powershell
-# パッチバージョンを更新して ZIP だけ作成
+# パッチバージョンを更新して ZIP 作成
 python tools/release.py --bump patch
 
-# マイナーバージョンを更新して Git タグ付きで push も行う
+# マイナーバージョンを更新して Git タグ付きで push
 python tools/release.py --bump minor --tag
 ```
 
----
+| オプション | 説明 |
+|---|---|
+| `--bump` | バージョン更新種別（必須）: `major` / `minor` / `patch` |
+| `--tag` | `pyproject.toml` のバージョン更新 + commit + Git タグ `vX.Y.Z` の作成・push |
 
-### 📝 備考
-
-- `pyproject.toml` の `version = "..."` は自動で上書きされます
-- Git タグ `vX.Y.Z` は `git push` 済みになります（`--tag` 指定時）
-- ZIP 作成対象：`bin/winactor_nodes` ディレクトリ配下すべて
+出力先: `dist/<リポジトリ名>-v<バージョン>.zip`
