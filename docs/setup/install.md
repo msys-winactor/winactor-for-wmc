@@ -1,13 +1,13 @@
 # WinActor for WMC のインストール
 
-WinActor for WMC のセットアップを実行し、ライブラリと関連ファイルをインストールします。
+WinActor for WMC のセットアップを実行し、関連ファイルをインストールします。
 
 ## インストール手順
 
-1. 提供された `winactor-for-wmc-setup-v{バージョン番号}.exe` を実行します
+1. 解凍したフォルダ内の `winactor-for-wmc-setup-v{バージョン番号}.exe` を実行します
 
     !!! todo "画像差し込み: `img/install-exe-icon.png`"
-        セットアップ exe のファイルアイコン or ダブルクリック実行時の画面
+        解凍後フォルダ内の exe ファイルの場所がわかるスクリーンショット
 
 2. セットアップウィザードの指示に従い、インストールを完了します
 

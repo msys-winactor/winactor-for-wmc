@@ -4,7 +4,7 @@ WMC と連携するための初期設定を行います。
 
 ## ライブラリの追加
 
-WinActor for WMC ライブラリを WinActor に追加します。
+解凍したフォルダ内の `MSYS_WMC連携_v{バージョン番号}` を WinActor に追加します。
 
 ### WinActor Ver7.6 以降
 
@@ -13,7 +13,7 @@ WinActor for WMC ライブラリを WinActor に追加します。
     !!! todo "画像差し込み: `img/winactor-library-folder-icon.png`"
         ライブラリパレットのツールバー（フォルダアイコンを赤枠で強調）
 
-2. WinActor WMC 連携 MSYS ライブラリ（WinActor WMC 連携 MSYS ライブラリ一式_v{バージョン番号}.zip）を解凍し、解凍後の「MSYS_WMC 連携_v{バージョン番号}」を格納します
+2. `MSYS_WMC連携_v{バージョン番号}` フォルダを格納します
 
     !!! todo "画像差し込み: `img/winactor-library-folder-select.png`"
         フォルダ選択ダイアログ or 格納先のフォルダ構成
