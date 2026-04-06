@@ -4,8 +4,7 @@ MSYS WinActor Adapters ライセンス認証ツールは、MSYS 提供の全 Win
 
 ## 起動方法
 
-1. ZIP ファイル（`winactor-adapters-license-authenticator-win32-x64.zip`）を任意の場所に解凍
-2. フォルダ内の `winactor-adapters-license-authenticator.exe` を起動
+解凍したフォルダ内の `ライセンス認証ツール` フォルダにある `winactor-adapters-license-authenticator.exe` を起動します。
 
 !!! tip
     インストール作業は不要です。exe を直接実行してください。

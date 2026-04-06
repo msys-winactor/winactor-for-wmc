@@ -10,19 +10,21 @@ WinActor for WMC を利用するには、ライセンス認証、WinActor for WM
 解凍後のフォルダ構成は以下のとおりです。
 
 ```
-WinActor WMC連携MSYSライブラリ一式_V***/ 
-├── winactor-for-wmc-setup-v*.*.*.exe    … インストーラ
-├── MSYS_WMC連携_v*.*.*/                 … ライブラリ本体
+WinActor WMC連携MSYSライブラリ一式_V***/
+├── winactor-for-wmc-setup-v*.*.*.exe  … インストーラ
+├── MSYS_WMC連携_v*.*.*/               … ライブラリ本体
 │   ├── 01_認証関連/
 │   ├── 02_WinActor関連/
 │   │   ...
 │   └── 10_所属関連/
-└── マニュアル/                                    … 本マニュアル
+├── マニュアル/                         … 本マニュアル
+└── ライセンス認証ツール/               … ライセンス認証ツール
+    └── winactor-adapters-license-authenticator.exe
 ```
 
 ## 1. ライセンス認証
 
-MSYS WinActor Adapters ライセンス認証ツールを使用して、ライセンスの登録を行います。
+解凍したフォルダ内の `ライセンス認証ツール` フォルダに含まれる認証ツールを使用して、ライセンスの登録を行います。
 
 !!! warning "重要"
     ライセンス認証が完了していないと WinActor for WMC ライブラリを使用することが出来ません。
