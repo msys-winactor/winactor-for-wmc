@@ -27,6 +27,11 @@ Uninstallable=no
 [Languages]
 Name: "japanese"; MessagesFile: "compiler:Languages\Japanese.isl"
 
+[InstallDelete]
+; Clean up previous installation to prevent stale files from remaining
+; Note: pyarmor_runtime_011041 is shared across adapters, so do not delete it
+Type: filesandordirs; Name: "{app}\winactor_for_wmc"
+
 [Files]
 ; pyarmor_runtime_011041 - always overwrite without warning
 Source: "{#SourceDir}\pyarmor_runtime_011041\*"; DestDir: "{app}\pyarmor_runtime_011041"; Flags: ignoreversion recursesubdirs createallsubdirs
