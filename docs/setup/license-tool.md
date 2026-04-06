@@ -10,7 +10,8 @@ MSYS WinActor Adapters ライセンス認証ツールは、MSYS 提供の全 Win
 1. ZIP ファイル（`winactor-adapters-license-authenticator-win32-x64.zip`）を任意の場所に解凍
 2. フォルダ内の `winactor-adapters-license-authenticator.exe` を起動
 
-インストール作業は不要です。
+!!! tip
+    インストール作業は不要です。exe を直接実行してください。
 
 ## ライセンス種別と認証フロー
 
@@ -53,7 +54,8 @@ MSYS WinActor Adapters ライセンス認証ツールは、MSYS 提供の全 Win
 4. 「製品 ID を生成」ボタンをクリックします
 5. 生成された製品 ID をクリップボードにコピーまたはファイルに保存します
 
-フォームに入力した内容は自動的に保存され、次回起動時に復元されます。
+!!! tip
+    フォームに入力した内容は自動的に保存され、次回起動時に復元されます。
 
 ### Step 2：製品 ID の送付
 
