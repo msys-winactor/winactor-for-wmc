@@ -13,8 +13,9 @@ import sys
 TOOLS = [
     ("1", "mkdocs-serve", "マニュアルプレビュー（http://localhost:8000）"),
     ("2", "mkdocs-build", "マニュアルビルド（ZIP 配布ファイル生成）"),
-    ("3", "copy-to-public", "Public フォルダ配置"),
-    ("4", "release --bump patch", "パッチリリース（バージョンバンプ + ZIP）"),
+    ("3", "mkdocs-build-no-zip", "マニュアルビルド（ZIP なし・site/ のみ）"),
+    ("4", "copy-to-public", "Public フォルダ配置"),
+    ("5", "release --bump patch", "パッチリリース（バージョンバンプ + ZIP）"),
 ]
 
 COMMANDS = {
@@ -25,6 +26,14 @@ COMMANDS = {
         "tools.generate_manual",
         "--clean",
         "--build",
+    ],
+    "mkdocs-build-no-zip": [
+        sys.executable,
+        "-m",
+        "tools.generate_manual",
+        "--clean",
+        "--build",
+        "--no-zip",
     ],
     "copy-to-public": [sys.executable, "-m", "tools.package_copy_to_public"],
     "release --bump patch": [

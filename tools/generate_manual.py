@@ -14,6 +14,7 @@ MkDocs 用の Markdown ファイル群と mkdocs.yml を生成する。
  python tools/generate_manual.py          # Markdown と mkdocs.yml を生成
  python tools/generate_manual.py --clean  # docs/nodes/ を削除してから再生成
  python tools/generate_manual.py --build  # 上記 + mkdocs build + ZIP 出力
+ python tools/generate_manual.py --build --no-zip  # mkdocs build のみ（ZIP なし）
 """
 
 import argparse
@@ -603,13 +604,8 @@ def write_docs(
 # ---------------------------------------------------------------------------
 
 
-def build_and_package(output_path: Path) -> None:
-    """
-    mkdocs build を実行し、site/ を ZIP にパッケージングする。
-
-    offline プラグインにより file:// でも動作するサイトが生成される。
-    ユーザーは ZIP を解凍して index.html を開くだけで利用可能。
-    """
+def _run_mkdocs_build() -> None:
+    """mkdocs build --strict を実行し、site/ の存在を確認する。"""
     print("[INFO] mkdocs build を実行中...")
     result = subprocess.run(
         ["mkdocs", "build", "--strict"],
@@ -624,6 +620,22 @@ def build_and_package(output_path: Path) -> None:
     if not SITE_DIR.exists():
         print(f"[ERROR] site/ が見つかりません: {SITE_DIR}")
         raise SystemExit(1)
+
+
+def build_only() -> None:
+    """mkdocs build のみ実行する（ZIP は生成しない）。"""
+    _run_mkdocs_build()
+    print(f"[INFO] サイトを生成しました: {SITE_DIR}")
+
+
+def build_and_package(output_path: Path) -> None:
+    """
+    mkdocs build を実行し、site/ を ZIP にパッケージングする。
+
+    offline プラグインにより file:// でも動作するサイトが生成される。
+    ユーザーは ZIP を解凍して index.html を開くだけで利用可能。
+    """
+    _run_mkdocs_build()
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -792,6 +804,11 @@ def main():
         help="mkdocs build を実行し、配布用 ZIP を生成する",
     )
     parser.add_argument(
+        "--no-zip",
+        action="store_true",
+        help="ZIP を生成せず mkdocs build のみ実行する (--build 時のみ有効)",
+    )
+    parser.add_argument(
         "-o",
         "--output",
         type=Path,
@@ -822,7 +839,9 @@ def main():
     print(f"[INFO] 固定ページ数: {len(static_pages)}")
     print(f"[INFO] mkdocs.yml: {MKDOCS_YML}")
 
-    if args.build:
+    if args.build and args.no_zip:
+        build_only()
+    elif args.build:
         build_and_package(args.output)
     else:
         print("")
