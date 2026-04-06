@@ -10,29 +10,29 @@ WinActor for WMC ライブラリを WinActor に追加します。
 
 1. 「ライブラリ」パレットを開き、フォルダアイコンをクリックします
 
-    !!! todo "画像差し込み"
+    !!! todo "画像差し込み: `img/winactor-library-folder-icon.png`"
         ライブラリパレットのツールバー（フォルダアイコンを赤枠で強調）
 
 2. WinActor WMC 連携 MSYS ライブラリ（WinActor WMC 連携 MSYS ライブラリ一式_v{バージョン番号}.zip）を解凍し、解凍後の「MSYS_WMC 連携_v{バージョン番号}」を格納します
 
-    !!! todo "画像差し込み"
+    !!! todo "画像差し込み: `img/winactor-library-folder-select.png`"
         フォルダ選択ダイアログ or 格納先のフォルダ構成
 
 3. 更新アイコンをクリックします
 
-    !!! todo "画像差し込み"
+    !!! todo "画像差し込み: `img/winactor-library-refresh-icon.png`"
         ライブラリパレットのツールバー（更新アイコンを赤枠で強調）
 
 ## WMC 連携の設定
 
 `[MSYS_WMC連携]` – `[01_認証関連]` – `[WMC連携(アクセストークン取得)]` ライブラリをシナリオに追加します。
 
-!!! todo "画像差し込み"
+!!! todo "画像差し込み: `img/winactor-library-tree-auth.png`"
     ライブラリツリーで MSYS_WMC連携 > 01_認証関連 > WMC連携(アクセストークン取得) を展開した状態
 
 プロパティ画面で WMC の URL とログイン情報を設定します。
 
-!!! todo "画像差し込み"
+!!! todo "画像差し込み: `img/winactor-node-property-auth.png`"
     WMC連携(アクセストークン取得) ノードのプロパティ画面（WMC URL・ユーザ名・パスワードの入力欄）
 
 ライブラリを実行することでアクセストークンを取得することができます。任意の変数を指定してください。
