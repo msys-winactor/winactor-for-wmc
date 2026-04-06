@@ -1,6 +1,6 @@
 # 導入ガイド
 
-WinActor for WMC を利用するには、ライセンス認証と WinActor の設定が必要です。
+WinActor for WMC を利用するには、ライセンス認証、WinActor for WMC のインストール、および WinActor の設定が必要です。
 
 ## 1. ライセンス認証
 
@@ -11,7 +11,13 @@ MSYS WinActor Adapters ライセンス認証ツールを使用して、ライセ
 
 :material-arrow-right: [ライセンス認証](license.md)
 
-## 2. WinActor の設定
+## 2. WinActor for WMC のインストール
+
+`winactor-for-wmc-setup-v{バージョン番号}.exe` を実行し、ライブラリと関連ファイルをインストールします。
+
+:material-arrow-right: [WinActor for WMC のインストール](install.md)
+
+## 3. WinActor の設定
 
 WinActor にライブラリを追加し、WMC への接続情報を設定します。
 
