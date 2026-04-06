@@ -28,7 +28,7 @@ WinActor for WMC は、RPA ツール「WinActor」から WinActor Manager on Clo
 
 ## はじめかた
 
-1. [導入ガイド](setup/index.md) に従ってライセンス認証と WinActor の設定を行う
+1. [導入ガイド](setup/index.md) に従ってライセンス認証、WinActor for WMC のインストール、WinActor の設定を行う
 2. 各ノードをシナリオに追加して利用する
 
 ## 利用上の注意
