@@ -70,10 +70,9 @@ MSYS WinActor Adapters ライセンス認証ツールは、MSYS 提供の全 Win
     **例**:
 
     ```
-    お世話になっております、丸紅商事の田中です。
-    WinActor for WMC のライセンス発行をお願いします。
+    下記ライセンスの発行をお願いします。
 
-    ■ 担当者名：田中 太郎
+    ■ 担当者名：山田 太郎
     ■ 対象アダプタ：WinActor for WMC
     ■ 製品 ID：ABCD-1234-EFGH-5678
     ```
