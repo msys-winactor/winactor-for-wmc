@@ -74,7 +74,7 @@ MSYS WinActor Adapters ライセンス認証ツールは、MSYS 提供の全 Win
 
     ■ 担当者名：山田 太郎
     ■ 対象アダプタ：WinActor for WMC
-    ■ 製品 ID：ABCD-1234-EFGH-5678
+    ■ 製品 ID：（貼り付け、またはファイルを添付）
     ```
 
 弊社にてライセンスファイル（`.json`）を発行し、返送いたします。
