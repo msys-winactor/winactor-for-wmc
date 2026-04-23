@@ -179,7 +179,7 @@ class LicenseFile:
         self, license_info: LicenseInfo
     ) -> tuple[bool, Optional[str]]:
         """NL（Named License）の検証。"""
-        hw_hash = license_info.raw_data.get("hw_hash", {})
+        hw_hash = license_info.raw_data.get("hw_hash") or {}
         expected_fingerprint = hw_hash.get("fingerprint")
         if not expected_fingerprint:
             return (
@@ -263,7 +263,7 @@ class LicenseFile:
 
         payload = verify_signed_license(signed_license)
 
-        custom = payload.get("custom", {})
+        custom = payload.get("custom") or {}
         self._license_info = LicenseInfo(
             license_uid=payload.get("license_uid", ""),
             product_id=int(payload.get("product_id", 0)),
