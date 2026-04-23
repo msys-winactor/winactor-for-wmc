@@ -1,3 +1,18 @@
+"""
+tools/package_copy_to_public.py
+
+src/ 配下のパッケージを PyArmor で暗号化して Public の配布先ディレクトリに配置するツール。
+_vendor/ は暗号化せず、暗号化済みパッケージに別途コピーする。
+
+使い方:
+    py -3.12-32 tools/package_copy_to_public.py           # 32bit (WinActor本番環境向け)
+    py -3.12    tools/package_copy_to_public.py --64bit   # 64bit (動作確認用)
+    py -3.12-32 tools/package_copy_to_public.py --skip-vendor  # vendoring をスキップ
+    poetry run python -m tools.package_copy_to_public --no-pyarmor  # 暗号化なし（開発用）
+"""
+
+import argparse
+import codecs
 import os
 import shlex
 import shutil
@@ -5,342 +20,214 @@ import subprocess
 import sys
 from pathlib import Path
 
-# 標準出力のエンコーディングをUTF-8に設定
-if sys.platform == "win32":
-    import codecs
+if sys.version_info >= (3, 11):
+    import tomllib
+else:
+    try:
+        import tomllib
+    except ModuleNotFoundError:
+        import tomli as tomllib  # type: ignore[no-redef]
 
+# Windows の標準出力を UTF-8 に固定
+if sys.platform == "win32":
     sys.stdout = codecs.getwriter("utf-8")(sys.stdout.buffer, "strict")
     sys.stderr = codecs.getwriter("utf-8")(sys.stderr.buffer, "strict")
 
-# プロジェクトルート基準の src ディレクトリ
 SRC_DIR = Path(__file__).resolve().parent.parent / "src"
-
-# コピー先ディレクトリ
-DEST_DIR = Path(r"C:\Users\Public\msys-winactor-adapters\libs\winactor_for_wmc")
-
-# 除外するディレクトリ名
+DEST_DIR = Path(r"C:\Users\Public\msys-winactor-adapters\libs")
+VENDOR_SCRIPT = Path(__file__).resolve().parent / "vendor_packages.py"
+PYPROJECT_TOML = Path(__file__).resolve().parent.parent / "pyproject.toml"
 EXCLUDE_DIRS = {"winactor_nodes"}
 
-# PyArmorコマンド解決用（遅延初期化）
-PYARMOR_BIN = None
-PYARMOR_CMD_DISPLAY = ""
+
+def _load_pyarmor_py_tag() -> str:
+    """
+    PyArmor 用の Python タグを返す（例: "-3.12-32"）。
+    環境変数 PYARMOR_PY_TAG > pyproject.toml [tool.winactor] の順で取得。
+    """
+    env = os.environ.get("PYARMOR_PY_TAG")
+    if env:
+        return env
+    with PYPROJECT_TOML.open("rb") as f:
+        data = tomllib.load(f)
+    winactor = data.get("tool", {}).get("winactor", {})
+    py_ver = winactor.get("target-python", f"{sys.version_info.major}.{sys.version_info.minor}")
+    arch = winactor.get("target-arch", "32")
+    return f"-{py_ver}-{arch}"
 
 
-def _python_available(py_tag: str) -> bool:
-    """py -<version> コマンドが存在するかを確認"""
+_PYARMOR_PY_TAG = _load_pyarmor_py_tag()
+
+
+# ── PyArmor コマンド解決 ───────────────────────────────────────────────────────
+
+
+def _check_command(cmd: list[str]) -> bool:
     try:
-        subprocess.run(
-            ["py", py_tag, "-c", "import sys"],
-            capture_output=True,
-            text=True,
-            check=True,
-        )
+        subprocess.run(cmd, capture_output=True, check=True)
         return True
     except (FileNotFoundError, subprocess.CalledProcessError):
         return False
 
 
-def _pyarmor_available(cmd: list[str]) -> bool:
-    """指定コマンドでPyArmorが利用可能か確認"""
-    try:
-        subprocess.run(
-            cmd + ["--version"],
-            capture_output=True,
-            text=True,
-            check=True,
-        )
-        return True
-    except (FileNotFoundError, subprocess.CalledProcessError):
-        return False
-
-
-def _resolve_pyarmor_command() -> list[str]:
-    """WinActor互換のPyArmorコマンドを取得"""
+def resolve_pyarmor_command() -> list[str]:
+    """
+    環境変数 PYARMOR_CMD があればそれを使う。
+    なければ py {_PYARMOR_PY_TAG} -m pyarmor.cli.__main__ を探す。
+    """
     env_cmd = os.environ.get("PYARMOR_CMD")
     if env_cmd:
-        return shlex.split(env_cmd, posix=False), env_cmd
+        return shlex.split(env_cmd, posix=False)
 
-    preferred_tag = os.environ.get("PYARMOR_PY_TAG", "-3.12-32")
-
-    if not _python_available(preferred_tag):
+    if not _check_command(["py", _PYARMOR_PY_TAG, "-c", "import sys"]):
         raise RuntimeError(
-            "WinActorと同じ32bit Python (py {0}) が見つかりません。"
-            " https://www.python.org/downloads/windows/ から 32bit Python をインストールするか、"
-            "環境変数 PYARMOR_CMD で PyArmor 実行コマンドを指定してください。".format(
-                preferred_tag
-            )
+            f"WinActor と同じ 32bit Python (py {_PYARMOR_PY_TAG}) が見つかりません。\n"
+            "  https://www.python.org/downloads/windows/ から 32bit Python をインストールするか、\n"
+            "  環境変数 PYARMOR_CMD で PyArmor 実行コマンドを指定してください。"
         )
 
-    # PyArmor 9.x exposes its CLI via pyarmor.cli.__main__ instead of pyarmor.__main__
-    cmd = ["py", preferred_tag, "-m", "pyarmor.cli.__main__"]
-    if not _pyarmor_available(cmd):
+    cmd = ["py", _PYARMOR_PY_TAG, "-m", "pyarmor.cli.__main__"]
+    if not _check_command(cmd + ["--version"]):
         raise RuntimeError(
-            "Python {0} に PyArmor 9.2.3 がインストールされていません。"
-            " 次を実行してください: py {0} -m pip install --upgrade pyarmor==9.2.3".format(
-                preferred_tag
-            )
+            f"Python {_PYARMOR_PY_TAG} に PyArmor がインストールされていません。\n"
+            f"  次を実行してください: py {_PYARMOR_PY_TAG} -m pip install pyarmor==9.2.3"
         )
 
-    return cmd, " ".join(cmd)
+    return cmd
 
 
-def get_pyarmor_command() -> list[str]:
-    """PyArmorコマンドをキャッシュして返す"""
-    global PYARMOR_BIN, PYARMOR_CMD_DISPLAY
-
-    if PYARMOR_BIN is None:
-        cmd, display = _resolve_pyarmor_command()
-        PYARMOR_BIN = cmd
-        PYARMOR_CMD_DISPLAY = display
-
-    return PYARMOR_BIN
+# ── ステップ関数 ───────────────────────────────────────────────────────────────
 
 
-def vendor_dependencies():
-    """依存パッケージを_vendorフォルダにコピー"""
-    # vendorディレクトリ（ビルド用一時フォルダ）
-    vendor_dir = SRC_DIR.parent / ".build_vendor"
+def run_vendoring(is_32bit: bool) -> None:
+    """vendor_packages.py を実行して _vendor/ を最新化する。"""
+    cmd = [sys.executable, str(VENDOR_SCRIPT)]
+    if not is_32bit:
+        cmd.append("--64bit")
+    print(f"Running: {' '.join(cmd)}")
+    subprocess.run(cmd, check=True)
 
-    # vendorディレクトリをクリーンアップ
-    if vendor_dir.exists():
-        print(f"🧹 既存の {vendor_dir} を削除します...")
-        shutil.rmtree(vendor_dir)
-    vendor_dir.mkdir(parents=True, exist_ok=True)
 
-    # __init__.pyを作成
-    init_file = vendor_dir / "__init__.py"
-    init_file.write_text('"""Vendored dependencies"""\n', encoding="utf-8")
+def obfuscate_with_pyarmor(pkg_src: Path) -> None:
+    """
+    PyArmor で pkg_src を暗号化して DEST_DIR に出力する。
+    _vendor/ は --exclude で除外する。
+    """
+    pyarmor_cmd = resolve_pyarmor_command()
+    print(f"PyArmor: {' '.join(pyarmor_cmd)}")
 
-    # 依存パッケージのリスト
-    dependencies = [
-        "requests",
-        "Crypto",  # pycryptodomeのパッケージ名
-        "certifi",
-        "charset_normalizer",
-        "idna",
-        "urllib3",
+    cmd = pyarmor_cmd + [
+        "gen",
+        "-r",
+        "--platform", "windows.x86",
+        "--exclude", "_vendor",
+        "-O", str(DEST_DIR),
+        str(pkg_src),
     ]
+    print(f"Running: {' '.join(cmd)}")
 
-    # 一時ディレクトリに依存関係をインストール
-    temp_dir = SRC_DIR.parent / ".temp_vendor"
-    if temp_dir.exists():
-        shutil.rmtree(temp_dir)
-    temp_dir.mkdir(exist_ok=True)
-
-    print("📦 依存パッケージをダウンロード中...")
-
-    # 32bit Python用にパッケージをダウンロード
-    import platform as plat
-
-    arch = plat.architecture()[0]  # '32bit' or '64bit'
-    python_version = f"{sys.version_info.major}.{sys.version_info.minor}"
-
-    if arch == "32bit":
-        # 32bit環境: 明示的に win32 パッケージを指定
-        print(f"  ℹ️  32bit Python {python_version} 用のパッケージをダウンロードします")
-        subprocess.run(
-            [
-                sys.executable,
-                "-m",
-                "pip",
-                "install",
-                "--target",
-                str(temp_dir),
-                "--platform",
-                "win32",
-                "--python-version",
-                python_version,
-                "--only-binary=:all:",
-                "--no-deps",
-                "pycryptodome>=3.21.0",
-            ],
-            check=True,
-        )
-        # requests とその依存関係（pure Python）
-        subprocess.run(
-            [
-                sys.executable,
-                "-m",
-                "pip",
-                "install",
-                "--target",
-                str(temp_dir),
-                "requests>=2.32.3,<3.0.0",
-            ],
-            check=True,
-        )
-    else:
-        # 64bit環境: 通常通りインストール
-        subprocess.run(
-            [
-                sys.executable,
-                "-m",
-                "pip",
-                "install",
-                "--target",
-                str(temp_dir),
-                "requests>=2.32.3,<3.0.0",
-                "pycryptodome>=3.21.0",
-            ],
-            check=True,
-        )
-
-    # 必要なパッケージをvendorディレクトリにコピー
-    print("📋 パッケージをvendorフォルダにコピー中...")
-    for dep in dependencies:
-        src_path = temp_dir / dep
-        if src_path.exists():
-            dst_path = vendor_dir / dep
-            if src_path.is_dir():
-                shutil.copytree(src_path, dst_path)
-                print(f"  ✓ コピー完了: {dep}")
-            else:
-                print(f"  ⚠ スキップ（ディレクトリではない）: {dep}")
-        else:
-            print(f"  ⚠ 警告: {dep} が見つかりません")
-
-    # .dist-infoや__pycache__などを削除
-    print("🧹 不要なファイルをクリーンアップ中...")
-    for item in vendor_dir.rglob("*"):
-        if item.is_dir():
-            if item.name in ["__pycache__", "tests", "test"]:
-                shutil.rmtree(item)
-            elif item.suffix in [".dist-info", ".egg-info"]:
-                shutil.rmtree(item)
-
-    # 一時ディレクトリを削除
-    shutil.rmtree(temp_dir)
-
-    print(f"✅ vendoring完了: {vendor_dir}\n")
-    return vendor_dir
+    result = subprocess.run(cmd, capture_output=True, text=True, cwd=str(SRC_DIR.parent))
+    if result.stdout:
+        print(result.stdout)
+    if result.stderr:
+        print(result.stderr, file=sys.stderr)
+    result.check_returncode()
 
 
-def obfuscate_with_pyarmor():
-    """PyArmorでwinactor_for_wmcを暗号化（_vendorは別途ビルドフォルダに作成）"""
-    print("🔐 PyArmorで暗号化を実行中...")
+def copy_package_plain(pkg_src: Path) -> None:
+    """
+    PyArmor を使わずに pkg_src をそのまま DEST_DIR にコピーする。
+    """
+    dest = DEST_DIR / pkg_src.name
+    print(f"Copying:  {pkg_src} -> {dest}")
+    shutil.copytree(pkg_src, dest)
 
-    wmc_src = SRC_DIR / "winactor_for_wmc"
-    if not wmc_src.exists():
-        print("  ⚠ winactor_for_wmcが見つかりません。スキップします。")
+
+def copy_vendor_to_dest(pkg_src: Path) -> None:
+    """
+    pkg_src/_vendor/ を DEST_DIR/{pkg_src.name}/_vendor/ にコピーする。
+    _vendor/ が存在しない場合はスキップする。
+    """
+    vendor_src = pkg_src / "_vendor"
+    if not vendor_src.exists():
+        print(f"  _vendor/ not found in {pkg_src}, skipping.")
         return
 
-    pyarmor_cmd = get_pyarmor_command()
-    if PYARMOR_CMD_DISPLAY:
-        print(f"  ℹ️  PyArmorコマンド: {PYARMOR_CMD_DISPLAY}")
-
-    # PyArmorで暗号化
-    try:
-        result = subprocess.run(
-            pyarmor_cmd
-            + [
-                "gen",
-                "-r",
-                "--platform",
-                "windows.x86",
-                "-O",
-                str(DEST_DIR),
-                str(wmc_src),
-            ],
-            capture_output=True,
-            text=True,
-            cwd=str(SRC_DIR.parent),
-        )
-
-        # 出力を表示
-        if result.stdout:
-            print(result.stdout)
-        if result.stderr:
-            print(result.stderr)
-
-        if result.returncode != 0:
-            raise subprocess.CalledProcessError(
-                result.returncode, result.args, result.stdout, result.stderr
-            )
-
-        print("  ✓ PyArmor暗号化完了")
-
-    except subprocess.CalledProcessError as e:
-        print(f"  ❌ PyArmor暗号化エラー: {e}")
-        raise
+    vendor_dest = DEST_DIR / pkg_src.name / "_vendor"
+    if vendor_dest.exists():
+        shutil.rmtree(vendor_dest)
+    print(f"Copying:  {vendor_src} -> {vendor_dest}")
+    shutil.copytree(vendor_src, vendor_dest)
 
 
-def copy_vendor_to_dest(vendor_src):
-    """暗号化済みのディレクトリに_vendorをコピー"""
-    vendor_dest = DEST_DIR / "winactor_for_wmc" / "_vendor"
-
-    if vendor_src.exists():
-        print("  📦 _vendorディレクトリをコピー中（暗号化なし）...")
-        if vendor_dest.exists():
-            shutil.rmtree(vendor_dest)
-        shutil.copytree(vendor_src, vendor_dest)
-        print("  ✓ _vendorコピー完了")
+# ── エントリポイント ──────────────────────────────────────────────────────────
 
 
-def main():
-    # コピー先ディレクトリがなければ作成
-    print("=" * 60)
-    print("STEP 1: パッケージのコピー")
-    print("=" * 60)
-    if not DEST_DIR.exists():
-        print(f"📁 コピー先ディレクトリ {DEST_DIR} を作成します...")
-        DEST_DIR.mkdir(parents=True, exist_ok=True)
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="パッケージを PyArmor で暗号化して Public ディレクトリへ配置する"
+    )
+    parser.add_argument(
+        "--64bit",
+        dest="is_64bit",
+        action="store_true",
+        help="64bit モードでインストール（動作確認用）",
+    )
+    parser.add_argument(
+        "--skip-vendor",
+        action="store_true",
+        help="_vendor/ が最新の場合に vendoring をスキップする",
+    )
+    parser.add_argument(
+        "--no-pyarmor",
+        action="store_true",
+        help="PyArmor 暗号化をせずにそのままコピーする（開発用）",
+    )
+    args = parser.parse_args()
+    is_32bit = not args.is_64bit
 
-    # src配下の __init__.py を含むパッケージで、除外対象でないものだけを選ぶ
     packages = [
         d
         for d in SRC_DIR.iterdir()
-        if (d.is_dir() and (d / "__init__.py").exists() and d.name not in EXCLUDE_DIRS)
+        if d.is_dir() and (d / "__init__.py").exists() and d.name not in EXCLUDE_DIRS
     ]
-
     if not packages:
-        print("❌ 対象パッケージが見つかりません。")
-        return
+        print("Error: コピー対象のパッケージが見つかりません。", file=sys.stderr)
+        sys.exit(1)
 
-    # winactor_for_wmcは暗号化、それ以外は通常コピー
+    DEST_DIR.mkdir(parents=True, exist_ok=True)
+
+    if not args.skip_vendor:
+        print("--- STEP 1: vendoring ---")
+        run_vendoring(is_32bit)
+        print()
+
     for pkg in packages:
-        dest_path = DEST_DIR / pkg.name
+        dest_pkg = DEST_DIR / pkg.name
+        if dest_pkg.exists():
+            print(f"Removing: {dest_pkg}")
+            shutil.rmtree(dest_pkg)
 
-        if pkg.name == "winactor_for_wmc":
-            # STEP 2: PyArmorで暗号化
-            print("\n" + "=" * 60)
-            print("STEP 2: PyArmorによる暗号化")
-            print("=" * 60)
-
-            # 暗号化前に出力先を完全にクリア（古い_vendorが残らないように）
-            if dest_path.exists():
-                print(f"🧹 既存の {dest_path} を削除します...")
-                shutil.rmtree(dest_path)
-
-            obfuscate_with_pyarmor()
+        if args.no_pyarmor:
+            print(f"--- STEP 2: copy ({pkg.name}) ---")
+            copy_package_plain(pkg)
         else:
-            # 既存のコピー先があれば削除
-            if dest_path.exists():
-                print(f"🧹 既存の {dest_path} を削除します...")
-                shutil.rmtree(dest_path)
+            print(f"--- STEP 2: PyArmor ({pkg.name}) ---")
+            obfuscate_with_pyarmor(pkg)
+        print()
 
-            print(f"📦 {pkg.name} を {dest_path} にコピーします...")
-            shutil.copytree(pkg, dest_path)
+        if not args.no_pyarmor:
+            print(f"--- STEP 3: copy _vendor/ ({pkg.name}) ---")
+            copy_vendor_to_dest(pkg)
+            print()
 
-    # STEP 3: vendoring（暗号化後）
-    print("\n" + "=" * 60)
-    print("STEP 3: 依存パッケージのvendoring")
-    print("=" * 60)
-    vendor_dir = vendor_dependencies()
 
-    # STEP 4: _vendorを暗号化済みディレクトリにコピー
-    print("\n" + "=" * 60)
-    print("STEP 4: _vendorを配置")
-    print("=" * 60)
-    copy_vendor_to_dest(vendor_dir)
-
-    print("\n" + "=" * 60)
-    print("✅ 全ての処理が完了しました！")
-    print("=" * 60)
+    print(f"Done. Destination: {DEST_DIR}")
 
 
 if __name__ == "__main__":
     try:
         main()
-    except RuntimeError as exc:
-        print(f"❌ {exc}")
+    except (RuntimeError, subprocess.CalledProcessError) as e:
+        print(f"Error: {e}", file=sys.stderr)
         sys.exit(1)

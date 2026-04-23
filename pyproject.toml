@@ -11,11 +11,13 @@ readme = "README.md"
 [tool.poetry.scripts]
 copy-to-public = "tools.package_copy_to_public:main"
 release = "tools.release:main"
-vendor = "tools.vendor_packages:vendor_dependencies"
+vendor = "tools.vendor_packages:main"
 generate-manual = "tools.generate_manual:main"
 
 [tool.poetry.dependencies]
 python = ">=3.12.8,<3.13"
+requests = ">=2.32.3,<3.0.0"
+cryptography = ">=44.0.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "^25.1.0"
@@ -26,8 +28,6 @@ pytest-cov = "^6.1.1"
 pytest-mock = "^3.14.0"
 pre-commit = "^4.2.0"
 flake8-pyproject = "^1.2.3"
-requests = ">=2.32.3,<3.0.0"
-pycryptodome = "^3.21.0"
 pyarmor = "^9.0.0"
 mkdocs = "^1.6.0"
 mkdocs-material = "^9.6.0"
@@ -36,6 +36,11 @@ pyyaml = "^6.0.0"
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.winactor]
+# WinActor 実行環境の Python バージョン（ベンダリング・PyArmor のターゲット）
+target-python = "3.12"
+target-arch = "32"
 
 [tool.isort]
 profile = "black"
