@@ -15,7 +15,7 @@ vendor = "tools.vendor_packages:main"
 generate-manual = "tools.generate_manual:main"
 
 [tool.poetry.dependencies]
-python = ">=3.12.8,<3.13"
+python = ">=3.12,<3.13"
 requests = ">=2.32.3,<3.0.0"
 cryptography = ">=44.0.0"
 
