@@ -75,18 +75,24 @@ jobs:
         run: |
           VENDOR_DIR="staging/winactor_for_wmc/_vendor"
           TEMP_DIR=".temp_vendor"
+          TARGET_PLATFORM="${{ inputs.architecture == 'x86' && 'win32' || 'win_amd64' }}"
 
           mkdir -p "$VENDOR_DIR"
           echo '"""Vendored dependencies"""' > "$VENDOR_DIR/__init__.py"
 
-          # 32bit Windows 用に pycryptodome をダウンロード
+          # ターゲット (32/64bit Windows) 向けに cryptography / cffi / pycparser を
+          # バイナリホイールでダウンロード。cryptography は _rust 拡張 + OpenSSL DLL を含む。
           python -m pip install \
             --target "$TEMP_DIR" \
-            --platform ${{ inputs.architecture == 'x86' && 'win32' || 'win_amd64' }} \
+            --platform "$TARGET_PLATFORM" \
             --python-version 3.12 \
+            --implementation cp \
+            --abi cp312 \
             --only-binary=:all: \
             --no-deps \
-            pycryptodome>=3.21.0
+            "cryptography>=44.0.0" \
+            cffi \
+            pycparser
 
           # requests とその依存関係 (pure Python)
           python -m pip install \
@@ -98,13 +104,19 @@ jobs:
             idna \
             urllib3
 
-          # 必要なパッケージだけ _vendor にコピー
-          for pkg in requests Crypto certifi charset_normalizer idna urllib3; do
+          # 必要なパッケージ／ファイルを _vendor にコピー
+          for pkg in requests cryptography cffi pycparser certifi charset_normalizer idna urllib3 cryptography.libs; do
             if [ -d "$TEMP_DIR/$pkg" ]; then
               cp -r "$TEMP_DIR/$pkg" "$VENDOR_DIR/$pkg"
-              echo "  Copied: $pkg"
-            else
-              echo "  Warning: $pkg not found"
+              echo "  Copied dir: $pkg"
+            fi
+          done
+
+          # _cffi_backend の .pyd (cffi のネイティブ拡張モジュール)
+          for f in "$TEMP_DIR"/_cffi_backend*; do
+            if [ -e "$f" ]; then
+              cp "$f" "$VENDOR_DIR/"
+              echo "  Copied file: $(basename "$f")"
             fi
           done
 
@@ -115,6 +127,16 @@ jobs:
           find "$VENDOR_DIR" -type d -name "tests" -exec rm -rf {} + 2>/dev/null || true
 
           rm -rf "$TEMP_DIR"
+
+          # 必須ファイルの存在確認
+          echo "=== Vendor verification ==="
+          ls "$VENDOR_DIR"/cryptography/hazmat/bindings/_rust* || { echo "ERROR: _rust*.pyd not found" >&2; exit 1; }
+          ls "$VENDOR_DIR"/_cffi_backend* || { echo "ERROR: _cffi_backend*.pyd not found" >&2; exit 1; }
+          if [ -d "$VENDOR_DIR/cryptography.libs" ]; then
+            echo "OK: cryptography.libs/ ($(ls "$VENDOR_DIR/cryptography.libs" | wc -l) files)"
+          else
+            echo "INFO: cryptography.libs/ not found (may be statically linked)"
+          fi
           echo "=== Vendor complete ==="
 
       # ── ステージング確認 ──────────────────────────────────
